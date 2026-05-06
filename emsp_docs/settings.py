@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
@@ -14,7 +15,30 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-me")
 
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host.strip()]
+
+def env_list(name, default=""):
+    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+
+
+ALLOWED_HOSTS = env_list(
+    "ALLOWED_HOSTS",
+    os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],.koyeb.app"),
+)
+
+koyeb_public_domain = os.getenv("KOYEB_PUBLIC_DOMAIN", "").strip()
+if koyeb_public_domain and koyeb_public_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(koyeb_public_domain)
+
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", "https://*.koyeb.app")
+if koyeb_public_domain:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{koyeb_public_domain}")
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() == "true"
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
 
 
 # Application definition
@@ -68,22 +92,37 @@ WSGI_APPLICATION = 'emsp_docs.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
-if DB_ENGINE == "django.db.backends.sqlite3":
-    db_name = BASE_DIR / "db.sqlite3"
-else:
-    db_name = os.getenv("DB_NAME", "emsp_docs")
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
-DATABASES = {
-    "default": {
-        "ENGINE": DB_ENGINE,
-        "NAME": db_name,
-        "USER": os.getenv("DB_USER", ""),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", ""),
-        "PORT": os.getenv("DB_PORT", ""),
+if DATABASE_URL:
+    database_url = urlparse(DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": database_url.path.lstrip("/"),
+            "USER": database_url.username or "",
+            "PASSWORD": database_url.password or "",
+            "HOST": database_url.hostname or "",
+            "PORT": database_url.port or "",
+        }
     }
-}
+else:
+    DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
+    if DB_ENGINE == "django.db.backends.sqlite3":
+        db_name = BASE_DIR / "db.sqlite3"
+    else:
+        db_name = os.getenv("DB_NAME", "emsp_docs")
+
+    DATABASES = {
+        "default": {
+            "ENGINE": DB_ENGINE,
+            "NAME": db_name,
+            "USER": os.getenv("DB_USER", ""),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", ""),
+            "PORT": os.getenv("DB_PORT", ""),
+        }
+    }
 
 
 # Password validation
@@ -122,10 +161,17 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = BASE_DIR / os.getenv("MEDIA_ROOT", "media")
 
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/espace-etudiant/"
