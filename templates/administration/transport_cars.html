@@ -1,0 +1,216 @@
+﻿{% extends 'base/base_admin.html' %}
+{% block title %}Gestion des cars - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:paiements' %}">Financier</a> / Gestion des cars{% endblock %}
+{% block content %}
+<h4 class="admin-page-title">Gestion des cars et inscriptions transport</h4>
+<p class="admin-page-subtitle">Inscription des etudiants selon leurs axes: Cocody, Yopougon, Bingerville, Abobo, Bassam.</p>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="transport-kpi-card transport-kpi-green">
+      <i class="fa-solid fa-bus"></i>
+      <strong>{{ transport_kpis.cars_actifs }}</strong>
+      <span>Cars actifs</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="transport-kpi-card transport-kpi-blue">
+      <i class="fa-solid fa-users"></i>
+      <strong>{{ transport_kpis.places_occupees }}</strong>
+      <span>Etudiants transportes</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="transport-kpi-card transport-kpi-red">
+      <i class="fa-solid fa-circle-xmark"></i>
+      <strong>{{ transport_kpis.cars_inactifs }}</strong>
+      <span>Cars inactifs</span>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  {% for axe in axes_cards %}
+    <div class="col-md-6 col-xl-2">
+      <div class="card h-100">
+        <div class="card-body py-3">
+          <small class="text-muted">Axe</small>
+          <h6 class="mb-1">{{ axe.label }}</h6>
+          <span class="badge bg-label-primary">{{ axe.count }} inscription(s)</span>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><h5 class="mb-0">Ajouter un car</h5></div>
+  <div class="card-body">
+    <form method="post" class="row g-3">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_car">
+      <div class="col-md-2"><label class="form-label">Nom</label><input class="form-control" name="nom" required></div>
+      <div class="col-md-2"><label class="form-label">Immatriculation</label><input class="form-control" name="immatriculation" required></div>
+      <div class="col-md-2"><label class="form-label">Axe principal</label><select class="form-select" name="axe_principal">{% for axe_code, axe_label in axes_transport %}<option value="{{ axe_code }}">{{ axe_label }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><label class="form-label">Chauffeur</label><input class="form-control" name="chauffeur"></div>
+      <div class="col-md-2"><label class="form-label">Telephone</label><input class="form-control" name="telephone_chauffeur"></div>
+      <div class="col-md-1"><label class="form-label">Capacite</label><input class="form-control" type="number" min="1" name="capacite" value="20"></div>
+      <div class="col-md-1"><label class="form-label">Actif</label><select class="form-select" name="actif"><option value="True">Oui</option><option value="False">Non</option></select></div>
+      <div class="col-md-12"><label class="form-label">Observations</label><input class="form-control" name="observations" placeholder="Circuit, plage horaire, remarques"></div>
+      <div class="col-md-12 d-grid"><button class="btn btn-transport-admin">Ajouter le car</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><h5 class="mb-0">Inscrire un etudiant au transport</h5></div>
+  <div class="card-body">
+    <form method="post" class="row g-3">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_inscription_transport">
+      <div class="col-md-3">
+        <label class="form-label">Etudiant</label>
+        <select class="form-select" name="etudiant" required>
+          {% for etudiant in etudiants %}
+            <option value="{{ etudiant.id }}">{{ etudiant.matricule }} - {{ etudiant.nom_complet }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><label class="form-label">Axe</label><select class="form-select" name="axe" required>{% for axe_code, axe_label in axes_transport %}<option value="{{ axe_code }}">{{ axe_label }}</option>{% endfor %}</select></div>
+      <div class="col-md-3"><label class="form-label">Car assigne</label><select class="form-select" name="car"><option value="">Aucun pour le moment</option>{% for car in cars_transport %}<option value="{{ car.id }}">{{ car.nom }} - {{ car.get_axe_principal_display }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><label class="form-label">Statut</label><select class="form-select" name="statut"><option value="en_attente">En attente</option><option value="validee">Validee</option><option value="suspendue">Suspendue</option></select></div>
+      <div class="col-md-2"><label class="form-label">Commentaire</label><input class="form-control" name="commentaire" placeholder="Optionnel"></div>
+      <div class="col-md-12 d-grid"><button class="btn btn-primary">Inscrire au service transport</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Parc de transport</h5>
+    <span class="badge bg-label-primary">{{ cars_transport|length }} car(s)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Nom</th><th>Immatriculation</th><th>Axe</th><th>Chauffeur</th><th>Telephone</th><th>Capacite</th><th>Places disponibles</th><th>Statut</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for car in cars_transport %}
+          <tr>
+            <td class="fw-semibold">{{ car.nom }}</td>
+            <td>{{ car.immatriculation }}</td>
+            <td>{{ car.get_axe_principal_display }}</td>
+            <td>{{ car.chauffeur|default:"-" }}</td>
+            <td>{{ car.telephone_chauffeur|default:"-" }}</td>
+            <td>{{ car.capacite }}</td>
+            <td>{{ car.places_disponibles }}</td>
+            <td>{% if car.actif %}<span class="badge bg-label-success">Actif</span>{% else %}<span class="badge bg-label-secondary">Inactif</span>{% endif %}</td>
+            <td>
+              <form method="post" class="d-inline" onsubmit="return confirm('Supprimer ce car ?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_car">
+                <input type="hidden" name="object_id" value="{{ car.id }}">
+                <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="9">
+              <form method="post" class="row g-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_car">
+                <input type="hidden" name="object_id" value="{{ car.id }}">
+                <div class="col-md-2"><input class="form-control form-control-sm" name="nom" value="{{ car.nom }}"></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" name="immatriculation" value="{{ car.immatriculation }}"></div>
+                <div class="col-md-2"><select class="form-select form-select-sm" name="axe_principal">{% for axe_code, axe_label in axes_transport %}<option value="{{ axe_code }}" {% if car.axe_principal == axe_code %}selected{% endif %}>{{ axe_label }}</option>{% endfor %}</select></div>
+                <div class="col-md-1"><input class="form-control form-control-sm" name="chauffeur" value="{{ car.chauffeur }}"></div>
+                <div class="col-md-1"><input class="form-control form-control-sm" name="telephone_chauffeur" value="{{ car.telephone_chauffeur }}"></div>
+                <div class="col-md-1"><input class="form-control form-control-sm" type="number" min="1" name="capacite" value="{{ car.capacite }}"></div>
+                <div class="col-md-1"><select class="form-select form-select-sm" name="actif"><option value="True" {% if car.actif %}selected{% endif %}>Actif</option><option value="False" {% if not car.actif %}selected{% endif %}>Inactif</option></select></div>
+                <div class="col-md-1"><input class="form-control form-control-sm" name="observations" value="{{ car.observations }}" placeholder="Observation"></div>
+                <div class="col-md-1 d-grid"><button class="btn btn-sm btn-outline-primary">Mise à jour</button></div>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="9" class="text-muted">Aucun car enregistre.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'administration/_pagination.html' with page_obj=cars_page_obj page_query=cars_page_query %}
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Inscriptions des etudiants au transport</h5>
+    <span class="badge bg-label-primary">{{ inscriptions_transport|length }} inscription(s)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Etudiant</th><th>Axe</th><th>Car</th><th>Statut</th><th>Date</th><th>Commentaire</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for ins in inscriptions_transport %}
+          <tr>
+            <td>{{ ins.etudiant.matricule }} - {{ ins.etudiant.nom_complet }}</td>
+            <td>{{ ins.get_axe_display }}</td>
+            <td>{{ ins.car.nom|default:'Aucun' }}</td>
+            <td>{{ ins.get_statut_display }}</td>
+            <td>{{ ins.date_inscription|date:'d/m/Y' }}</td>
+            <td>{{ ins.commentaire|default:'-' }}</td>
+            <td>
+              <form method="post" class="d-inline" onsubmit="return confirm('Supprimer cette inscription transport ?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_inscription_transport">
+                <input type="hidden" name="object_id" value="{{ ins.id }}">
+                <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="7">
+              <form method="post" class="row g-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_inscription_transport">
+                <input type="hidden" name="object_id" value="{{ ins.id }}">
+                <div class="col-md-3"><select class="form-select form-select-sm" name="etudiant">{% for etudiant in etudiants %}<option value="{{ etudiant.id }}" {% if ins.etudiant_id == etudiant.id %}selected{% endif %}>{{ etudiant.matricule }} - {{ etudiant.nom_complet }}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><select class="form-select form-select-sm" name="axe">{% for axe_code, axe_label in axes_transport %}<option value="{{ axe_code }}" {% if ins.axe == axe_code %}selected{% endif %}>{{ axe_label }}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><select class="form-select form-select-sm" name="car"><option value="">Aucun</option>{% for car in cars_transport %}<option value="{{ car.id }}" {% if ins.car_id == car.id %}selected{% endif %}>{{ car.nom }}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><select class="form-select form-select-sm" name="statut"><option value="en_attente" {% if ins.statut == 'en_attente' %}selected{% endif %}>En attente</option><option value="validee" {% if ins.statut == 'validee' %}selected{% endif %}>Validee</option><option value="suspendue" {% if ins.statut == 'suspendue' %}selected{% endif %}>Suspendue</option></select></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" name="commentaire" value="{{ ins.commentaire }}" placeholder="Commentaire"></div>
+                <div class="col-md-1 d-grid"><button class="btn btn-sm btn-outline-primary">Mise à jour</button></div>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-muted">Aucune inscription transport enregistree.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'administration/_pagination.html' with page_obj=transport_inscriptions_page_obj page_query=transport_inscriptions_page_query %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ transport_kpis|json_script:"transport-kpis-data" }}
+  <script src="/static/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var node = document.getElementById('transport-kpis-data');
+      var el = document.getElementById('transportOccupationChart');
+      if (!node || !el || typeof ApexCharts === 'undefined') return;
+      var data = JSON.parse(node.textContent || '{}');
+      new ApexCharts(el, {
+        chart: { type: 'donut', height: 120 },
+        labels: ['Occupees', 'Disponibles'],
+        series: [data.places_occupees || 0, Math.max((data.total_places || 0) - (data.places_occupees || 0), 0)],
+        legend: { show: false },
+        dataLabels: { enabled: false },
+        stroke: { width: 0 },
+        plotOptions: { pie: { donut: { size: '68%' } } }
+      }).render();
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base/base_admin.html' %}
+{% block title %}Utilisateurs et roles - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:utilisateurs' %}">Systeme</a> / Utilisateurs et roles{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="admin-page-title mb-1">Utilisateurs et roles</h4>
+    <p class="text-muted mb-0">Gestion des comptes admin, secretariat, professeur et droits d'acces.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="/admin/"><i class="fa-solid fa-screwdriver-wrench me-1"></i>Edition via Django Admin</a>
+    <button class="btn btn-primary admin-create-user-btn" type="button" data-bs-toggle="collapse" data-bs-target="#createUserForm"><i class="fa-solid fa-plus me-1"></i>Creer un compte</button>
+  </div>
+</div>
+
+<div class="card collapse mb-4" id="createUserForm">
+  <div class="card-header"><h5 class="mb-0">Creer un compte</h5></div>
+  <div class="card-body">
+    <form method="post" class="row g-3">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_user">
+      <div class="col-md-3"><label class="form-label">Nom utilisateur</label><input class="form-control" name="username" required></div>
+      <div class="col-md-3"><label class="form-label">Prenom</label><input class="form-control" name="first_name"></div>
+      <div class="col-md-3"><label class="form-label">Nom</label><input class="form-control" name="last_name"></div>
+      <div class="col-md-3"><label class="form-label">Email</label><input class="form-control" type="email" name="email"></div>
+      <div class="col-md-3"><label class="form-label">Mot de passe</label><input class="form-control" type="password" name="password"></div>
+      <div class="col-md-3"><label class="form-label">Role</label><select class="form-select" name="role">{% for code, label in roles_disponibles %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select></div>
+      <div class="col-md-3"><label class="form-label">Statut</label><select class="form-select" name="is_active"><option value="True">Actif</option><option value="False">Inactif</option></select></div>
+      <div class="col-md-3 d-grid align-items-end"><button class="btn btn-primary mt-md-4">Creer</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead><tr><th>Utilisateur</th><th>Email</th><th>Role</th><th>Derniere connexion</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for user in utilisateurs %}
+          <tr>
+            <td>{{ user.get_full_name|default:user.username }}<br><span class="text-muted">{{ user.username }}</span></td>
+            <td>{{ user.email|default:"-" }}</td>
+            <td><span class="badge role-badge role-{{ user.role_admin|lower }}">{{ user.role_admin }}</span></td>
+            <td>{% if user.last_login %}{{ user.last_login|date:"d/m/Y H:i" }}{% else %}-{% endif %}</td>
+            <td>
+              {% if user.is_active %}
+                <span class="badge bg-label-success">Actif</span>
+              {% else %}
+                <span class="badge bg-label-secondary">Inactif</span>
+              {% endif %}
+            </td>
+            <td class="d-flex flex-wrap gap-1">
+              <button class="btn btn-sm btn-label-primary" type="button" data-bs-toggle="collapse" data-bs-target="#edit-user-{{ user.id }}">Modifier admin</button>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="toggle_user">
+                <input type="hidden" name="object_id" value="{{ user.id }}">
+                <button class="btn btn-sm btn-outline-secondary">{% if user.is_active %}Desactiver{% else %}Activer{% endif %}</button>
+              </form>
+            </td>
+          </tr>
+          <tr class="collapse admin-inline-edit-row" id="edit-user-{{ user.id }}">
+            <td colspan="6">
+              <form method="post" class="row g-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_user">
+                <input type="hidden" name="object_id" value="{{ user.id }}">
+                <div class="col-md-2"><input class="form-control form-control-sm" name="username" value="{{ user.username }}" required></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" name="first_name" value="{{ user.first_name }}" placeholder="Prenom"></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" name="last_name" value="{{ user.last_name }}" placeholder="Nom"></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="email" name="email" value="{{ user.email }}" placeholder="Email"></div>
+                <div class="col-md-1"><select class="form-select form-select-sm" name="role">{% for code, label in roles_disponibles %}<option value="{{ code }}" {% if user.role_admin == code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                <div class="col-md-1"><select class="form-select form-select-sm" name="is_active"><option value="True" {% if user.is_active %}selected{% endif %}>Actif</option><option value="False" {% if not user.is_active %}selected{% endif %}>Inactif</option></select></div>
+                <div class="col-md-1"><input class="form-control form-control-sm" type="password" name="password" placeholder="Nouveau mdp"></div>
+                <div class="col-md-1 d-grid"><button class="btn btn-sm btn-primary">OK</button></div>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">Aucun utilisateur trouve.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'administration/_pagination.html' %}
+</div>
+{% endblock %}

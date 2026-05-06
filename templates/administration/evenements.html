@@ -1,0 +1,90 @@
+{% extends 'base/base_admin.html' %}
+{% block title %}Evenements - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:etudiants_liste' %}">Academique</a> / Evenements{% endblock %}
+{% block content %}
+<h4 class="admin-page-title">Evenements et activites</h4>
+<p class="admin-page-subtitle">Planification des examens, conferences, concours et activites institutionnelles.</p>
+
+<div class="row g-4">
+  <div class="col-xl-5">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Creer un evenement</h5></div>
+      <div class="card-body">
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_evenement">
+          <div class="col-12"><label class="form-label">Titre</label><input class="form-control" name="titre" placeholder="Ex: Conference sur l'IA et l'education" required></div>
+          <div class="col-12"><label class="form-label">Type</label><select class="form-select" name="type">{% for code, label in evenement_types %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select></div>
+          <div class="col-6"><label class="form-label">Date</label><input type="date" class="form-control" name="date" required></div>
+          <div class="col-6"><label class="form-label">Heure</label><input type="time" class="form-control" name="heure" required></div>
+          <div class="col-12"><label class="form-label">Lieu</label><input class="form-control" name="lieu" placeholder="Ex: Amphi A - Batiment principal" required></div>
+          <div class="col-12"><label class="form-label">Public cible</label><input class="form-control" name="public_cible" value="Tous"></div>
+          <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" rows="4" name="description"></textarea></div>
+          <div class="col-12"><button class="btn btn-primary w-100">Publier</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-7">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Evenements existants</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead><tr><th>Titre</th><th>Date</th><th>Type</th><th>Public</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for evenement in evenements %}
+              <tr>
+                <td class="fw-semibold">{{ evenement.titre }}<br><span class="text-muted small">{{ evenement.lieu }}</span></td>
+                <td>{{ evenement.date|date:"d/m/Y" }} {{ evenement.heure|time:"H:i" }}</td>
+                <td>{{ evenement.get_type_display }}</td>
+                <td>{{ evenement.public_cible }}</td>
+                <td>
+                  {% if evenement.statut == 'a_venir' %}<span class="badge bg-label-primary">A venir</span>{% endif %}
+                  {% if evenement.statut == 'passe' %}<span class="badge bg-label-secondary">Passe</span>{% endif %}
+                  {% if evenement.statut == 'annule' %}<span class="badge bg-label-danger">Annule</span>{% endif %}
+                </td>
+                <td class="d-flex flex-wrap gap-1">
+                  <button class="btn btn-sm btn-label-primary" type="button" data-bs-toggle="collapse" data-bs-target="#edit-evenement-{{ evenement.id }}">Modifier</button>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cancel_evenement">
+                    <input type="hidden" name="object_id" value="{{ evenement.id }}">
+                    <button class="btn btn-sm btn-label-warning">Annuler</button>
+                  </form>
+                  <form method="post" onsubmit="return confirm('Supprimer cet evenement ?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_evenement">
+                    <input type="hidden" name="object_id" value="{{ evenement.id }}">
+                    <button class="btn btn-sm btn-label-danger">Supprimer</button>
+                  </form>
+                </td>
+              </tr>
+              <tr class="collapse" id="edit-evenement-{{ evenement.id }}">
+                <td colspan="6">
+                  <form method="post" class="row g-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_evenement">
+                    <input type="hidden" name="object_id" value="{{ evenement.id }}">
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="titre" value="{{ evenement.titre }}"></div>
+                    <div class="col-md-2"><select class="form-select form-select-sm" name="type">{% for code, label in evenement_types %}<option value="{{ code }}" {% if evenement.type == code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                    <div class="col-md-2"><input type="date" class="form-control form-control-sm" name="date" value="{{ evenement.date|date:'Y-m-d' }}"></div>
+                    <div class="col-md-2"><input type="time" class="form-control form-control-sm" name="heure" value="{{ evenement.heure|time:'H:i' }}"></div>
+                    <div class="col-md-2"><input class="form-control form-control-sm" name="lieu" value="{{ evenement.lieu }}"></div>
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="public_cible" value="{{ evenement.public_cible }}"></div>
+                    <div class="col-md-6"><input class="form-control form-control-sm" name="description" value="{{ evenement.description }}"></div>
+                    <div class="col-md-1"><select class="form-select form-select-sm" name="annule"><option value="False" {% if not evenement.annule %}selected{% endif %}>Actif</option><option value="True" {% if evenement.annule %}selected{% endif %}>Annule</option></select></div>
+                    <div class="col-md-1 d-grid"><button class="btn btn-sm btn-primary">OK</button></div>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" class="text-center text-muted py-4">Aucun evenement publie.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include 'administration/_pagination.html' %}
+    </div>
+  </div>
+</div>
+{% endblock %}

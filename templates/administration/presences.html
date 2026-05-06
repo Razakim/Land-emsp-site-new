@@ -1,0 +1,118 @@
+{% extends 'base/base_admin.html' %}
+{% block title %}Presences - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:etudiants_liste' %}">Academique</a> / Presences{% endblock %}
+{% block content %}
+<h4 class="admin-page-title">Presences et absences</h4>
+<p class="admin-page-subtitle">Prise de presences, justifications et rapports d'assiduite.</p>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Filiere</label>
+        <select class="form-select" name="filiere">
+          <option value="">Filiere</option>
+          {% for filiere in filieres %}
+            <option value="{{ filiere.id }}" {% if filters.filiere == filiere.id|stringformat:'s' %}selected{% endif %}>{{ filiere.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Matiere</label>
+        <select class="form-select" name="matiere">
+          <option value="">Matiere</option>
+          {% for matiere in matieres %}
+            <option value="{{ matiere.id }}" {% if filters.matiere == matiere.id|stringformat:'s' %}selected{% endif %}>{{ matiere.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><label class="form-label">Date</label><input type="date" class="form-control" name="date" value="{{ filters.date }}"></div>
+      <div class="col-md-2">
+        <label class="form-label">Creneau</label>
+        <select class="form-select" name="creneau">
+          <option value="">Creneau</option>
+          {% for creneau in creneaux_absence %}
+            <option value="{{ creneau.id }}" {% if filters.creneau == creneau.id|stringformat:'s' %}selected{% endif %}>{{ creneau.libelle }} ({{ creneau.heure_debut|time:'H:i' }}-{{ creneau.heure_fin|time:'H:i' }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-primary w-100">Charger</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save_presences">
+    <input type="hidden" name="filiere" value="{{ filters.filiere }}">
+    <input type="hidden" name="matiere" value="{{ filters.matiere }}">
+    <input type="hidden" name="date" value="{{ filters.date }}">
+    <input type="hidden" name="creneau" value="{{ filters.creneau }}">
+    <div class="card-header d-flex justify-content-between align-items-center"><div><h5 class="mb-1">Liste de presence</h5><div class="presence-legend"><span><i class="legend-dot present"></i>Present</span><span><i class="legend-dot absent"></i>Absent</span></div></div><button type="button" class="btn btn-outline-secondary" id="markAllPresent">Tout present</button></div>
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Etudiant</th><th>Matricule</th><th>Statut</th></tr></thead>
+        <tbody>
+          {% for row in presence_rows %}
+            <tr>
+              <td>{{ row.etudiant.nom_complet }}</td>
+              <td>{{ row.etudiant.matricule }}</td>
+              <td><div class="form-check form-switch"><input class="form-check-input presence-toggle" type="checkbox" name="present_etudiants" value="{{ row.etudiant.id }}" {% if row.present %}checked{% endif %}></div></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="text-muted">Selectionnez les filtres puis cliquez sur Charger.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include 'administration/_pagination.html' %}
+    <div class="card-footer"><button class="btn btn-primary" {% if not presence_rows %}disabled{% endif %}>Enregistrer les presences</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-header"><h5 class="mb-0">Justifications en attente</h5></div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Etudiant</th><th>Seance</th><th>Motif</th><th>Piece jointe</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for justification in justifications_en_attente %}
+          <tr>
+            <td>{{ justification.presence.etudiant.nom_complet }}</td>
+            <td>{{ justification.presence.matiere.nom }} - {{ justification.presence.date|date:"d/m/Y" }} - {{ justification.presence.creneau.libelle }}</td>
+            <td>{{ justification.motif }}</td>
+            <td>{% if justification.piece_jointe %}<a href="{{ justification.piece_jointe.url }}" target="_blank">Voir justificatif</a>{% else %}<span class="text-muted">Aucune</span>{% endif %}</td>
+            <td class="d-flex gap-1">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="accept_justification">
+                <input type="hidden" name="object_id" value="{{ justification.id }}">
+                <button class="btn btn-sm btn-success">Accepter</button>
+              </form>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="refuse_justification">
+                <input type="hidden" name="object_id" value="{{ justification.id }}">
+                <button class="btn btn-sm btn-danger">Refuser</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">Aucune justification en attente.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('markAllPresent')?.addEventListener('click', function () {
+    document.querySelectorAll('.presence-toggle').forEach(function (checkbox) {
+      checkbox.checked = true;
+    });
+  });
+</script>
+{% endblock %}

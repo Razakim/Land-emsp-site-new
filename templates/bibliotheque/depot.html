@@ -1,0 +1,40 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Depot document · EMSP{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/bibliotheque.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="biblio-page py-5 mt-5">
+  <div class="container" style="max-width: 900px;">
+    <div class="biblio-header mb-4">
+      <h1>Partager un document</h1>
+      <p>Contribue a la bibliotheque en partageant tes cours, TD, examens ou corrections. Chaque depot est verifie avant publication.</p>
+    </div>
+
+    <div class="detail-card">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-3">
+          {% for field in form %}
+          <div class="col-md-6 {% if field.name == 'description' %}col-12{% endif %}">
+            <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<small class="text-muted d-block">{{ field.help_text }}</small>{% endif %}
+            {% for err in field.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="mt-3 form-check">
+          <input class="form-check-input" type="checkbox" required id="confirmRights">
+          <label class="form-check-label" for="confirmRights">Je certifie que ce document m'appartient ou que j'ai le droit de le partager.</label>
+        </div>
+        <button class="btn btn-success mt-3" type="submit">Soumettre pour validation</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

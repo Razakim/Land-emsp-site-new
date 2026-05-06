@@ -1,0 +1,37 @@
+{% extends 'base/base_admin.html' %}
+{% block title %}Profil administrateur - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / Mon profil{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-xl-4">
+    <div class="card admin-profile-card">
+      <div class="card-body text-center">
+        <div class="avatar avatar-xl mx-auto mb-3">
+          <span class="avatar-initial rounded-circle bg-label-primary">{{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|upper }}</span>
+        </div>
+        <h4 class="mb-1">{{ admin_display_name }}</h4>
+        <p class="text-muted mb-2">{{ request.user.email|default:"Email non renseigne" }}</p>
+        <span class="badge role-badge role-{{ admin_role|lower }}">{{ admin_role }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-8">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Informations du compte</h5></div>
+      <div class="card-body">
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+          <div class="col-md-6"><label class="form-label">Prenom</label><input class="form-control" name="first_name" value="{{ request.user.first_name }}" placeholder="Votre prenom"></div>
+          <div class="col-md-6"><label class="form-label">Nom</label><input class="form-control" name="last_name" value="{{ request.user.last_name }}" placeholder="Votre nom"></div>
+          <div class="col-md-6"><label class="form-label">Nom utilisateur</label><input class="form-control" name="username" value="{{ request.user.username }}" required></div>
+          <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" type="email" name="email" value="{{ request.user.email }}" placeholder="nom@emsp.int" required></div>
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <button class="btn btn-primary">Mise à jour</button>
+            <a class="btn btn-outline-secondary" href="{% url 'accounts:password_change' %}">Changer mot de passe</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

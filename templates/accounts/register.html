@@ -1,0 +1,27 @@
+﻿{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Creer un compte - EMSP{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+{% block content %}
+<section class="auth-shell">
+  <div class="auth-panel">
+    <div class="auth-brand"><span>EMSP</span><strong>Nouveau compte</strong></div>
+    <div class="auth-copy"><h1>Creation du compte</h1><p>Renseignez vos informations pour ouvrir votre session administration.</p></div>
+  </div>
+  <div class="auth-card auth-card-wide">
+    <h2>Creer un compte</h2>
+    <form method="post" class="auth-form auth-grid">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div><label for="id_first_name">Prenom</label><input class="form-control" id="id_first_name" name="first_name" placeholder="Ex: Aminata" required></div>
+      <div><label for="id_last_name">Nom</label><input class="form-control" id="id_last_name" name="last_name" placeholder="Ex: Kone" required></div>
+      <div><label for="id_username">Nom utilisateur</label>{{ form.username }}{{ form.username.errors }}</div>
+      <div><label for="id_email">Email</label><input class="form-control" id="id_email" type="email" name="email" placeholder="nom@emsp.int" required></div>
+      <div><label for="id_password1">Mot de passe</label>{{ form.password1 }}{{ form.password1.errors }}</div>
+      <div><label for="id_password2">Confirmation</label>{{ form.password2 }}{{ form.password2.errors }}</div>
+      <button class="btn auth-submit auth-grid-full">Creer mon compte</button>
+    </form>
+    <p class="auth-footer-text">Deja un compte ? <a href="{% url 'accounts:login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">Se connecter</a></p>
+  </div>
+</section>
+{% endblock %}

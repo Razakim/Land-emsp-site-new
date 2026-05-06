@@ -1,0 +1,56 @@
+{% extends 'base/base_admin.html' %}
+{% block title %}Inscriptions - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:etudiants_liste' %}">Academique</a> / Inscriptions{% endblock %}
+{% block content %}
+<h4 class="admin-page-title">Gestion des inscriptions et dossiers</h4>
+<p class="admin-page-subtitle">File d'attente des dossiers, validation et demandes de complements.</p>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <ul class="nav nav-tabs card-header-tabs">
+      {% for tab in status_tabs %}
+        <li class="nav-item">
+          <a class="nav-link {% if active_statut == tab.code %}active{% endif %}" href="{% url 'administration:inscriptions' %}?statut={{ tab.code }}">
+            {{ tab.label }}
+            {% if tab.code == 'en_attente' %}<span class="badge bg-danger ms-1">{{ en_attente_count }}</span>{% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    <a class="btn btn-outline-secondary" href="{% url 'administration:inscriptions' %}?statut={{ active_statut }}&export=1">Exporter</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Candidat</th><th>Filiere</th><th>Date soumission</th><th>Documents</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for dossier in dossiers %}
+          <tr>
+            <td><div class="fw-semibold">{{ dossier.inscription.nom_complet }}</div><small class="text-muted">{{ dossier.inscription.email }}</small></td>
+            <td>{{ dossier.inscription.filiere.nom }} - {{ dossier.inscription.licence }}</td>
+            <td>{{ dossier.inscription.date_soumission|date:"d/m/Y" }}</td>
+            <td><span class="badge bg-label-success me-1">{{ dossier.documents_fournis }} fournis</span><span class="badge bg-label-danger">{{ dossier.documents_manquants }} manquant(s)</span></td>
+            <td class="d-flex gap-1">
+              <a class="btn btn-sm btn-label-primary" href="{% url 'administration:dossier_detail' dossier.id %}">Examiner</a>
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="validate_dossier">
+                <input type="hidden" name="object_id" value="{{ dossier.id }}">
+                <button class="btn btn-sm btn-success">Valider</button>
+              </form>
+              <form method="post" class="d-inline" onsubmit="return confirm('Refuser ce dossier ?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="refuse_dossier">
+                <input type="hidden" name="object_id" value="{{ dossier.id }}">
+                <button class="btn btn-sm btn-danger">Refuser</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">Aucun dossier dans cet onglet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'administration/_pagination.html' %}
+</div>
+{% endblock %}

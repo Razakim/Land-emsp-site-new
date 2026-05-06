@@ -1,0 +1,130 @@
+{% extends 'base/base_admin.html' %}
+{% block title %}Etudiants - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:etudiants_liste' %}">Academique</a> / Etudiants{% endblock %}
+{% block content %}
+<h4 class="admin-page-title">Gestion des etudiants</h4>
+<p class="admin-page-subtitle">Creation des profils et suivi academique (filiere, niveau, semestre, bulletin).</p>
+
+<div class="card mb-4 admin-filter-card">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label">Filiere</label>
+        <select class="form-select" name="filiere">
+          <option value="">Toutes</option>
+          {% for filiere in filieres %}
+            <option value="{{ filiere.id }}" {% if filters.filiere == filiere.id|stringformat:'s' %}selected{% endif %}>{{ filiere.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Niveau</label>
+        <select class="form-select" name="licence">
+          <option value="">Tous</option>
+          {% for licence in licences %}
+            <option value="{{ licence.id }}" {% if filters.licence == licence.id|stringformat:'s' %}selected{% endif %}>{{ licence }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Matricule</label>
+        <input class="form-control" name="matricule" value="{{ filters.matricule }}" placeholder="Ex: prenom.nom@fsmenum2026.emsp.int">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Recherche</label>
+        <input class="form-control" name="q" value="{{ filters.q }}" placeholder="Nom, matricule, email">
+      </div>
+       <div class="col-md-2 d-grid">
+         <button class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-size: 1.125rem; line-height: 1.2;">Filtrer</button>
+       </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4 admin-create-card">
+  <div class="card-header"><h5 class="mb-0"><i class="fa-solid fa-user-plus me-2 text-success"></i>Ajouter un etudiant</h5></div>
+  <div class="card-body">
+     <form method="post" enctype="multipart/form-data" class="row g-3">
+       {% csrf_token %}
+       <input type="hidden" name="action" value="create_etudiant">
+       <div class="col-md-3"><label class="form-label">Prenom</label><input class="form-control" name="prenom" placeholder="Ex: Aminata" required></div>
+       <div class="col-md-3"><label class="form-label">Nom</label><input class="form-control" name="nom" placeholder="Ex: Kone" required></div>
+       <div class="col-md-3"><label class="form-label">Email</label><input class="form-control" type="email" name="email" placeholder="Ex: aminata.kone@emsp.edu" required></div>
+       <div class="col-md-3"><label class="form-label">Matricule</label><input class="form-control" name="matricule" placeholder="Auto: prenom.nom@fsmenum2026.emsp.int"></div>
+       <div class="col-md-3"><label class="form-label">Telephone</label><input class="form-control" name="telephone" placeholder="Ex: +225 07 00 00 00"></div>
+       <div class="col-md-3"><label class="form-label">Photo</label><input class="form-control" type="file" name="photo" accept="image/*"></div>
+       <div class="col-md-3"><label class="form-label">Filiere</label><select class="form-select" name="filiere">{% for filiere in filieres %}<option value="{{ filiere.id }}">{{ filiere.nom }}</option>{% endfor %}</select></div>
+        <div class="col-md-2"><label class="form-label">Niveau</label><select class="form-select" name="licence">{% for licence in licences %}<option value="{{ licence.id }}">{{ licence }}</option>{% endfor %}</select></div>
+       <div class="col-md-2"><label class="form-label">Statut</label><select class="form-select" name="actif"><option value="True">Actif</option><option value="False">Inactif</option></select></div>
+       <div class="col-md-12 d-grid"><button class="btn btn-primary">Ajouter l'etudiant</button></div>
+     </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Liste des etudiants</h5>
+    <span class="badge bg-label-primary">{{ etudiants|length }} resultat(s)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+         <tr><th>Photo</th><th>Nom</th><th>Prenom</th><th>Email</th><th>Telephone</th><th>Matricule</th><th>Filiere</th><th>Niveau</th><th>Statut</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for etudiant in etudiants %}
+          <tr>
+            <td>
+              {% if etudiant.photo %}
+                <img src="{{ etudiant.photo.url }}" alt="{{ etudiant.nom_complet }}" class="admin-student-photo">
+              {% else %}
+                <span class="admin-student-photo admin-student-photo-empty">{{ etudiant.utilisateur.first_name|first|default:'E' }}{{ etudiant.utilisateur.last_name|first|default:'' }}</span>
+              {% endif %}
+            </td>
+            <td class="fw-semibold">{{ etudiant.utilisateur.last_name|default:'-' }}</td>
+            <td>{{ etudiant.utilisateur.first_name|default:'-' }}</td>
+            <td>{{ etudiant.utilisateur.email|default:"Email non renseigne" }}</td>
+            <td>{{ etudiant.telephone|default:'-' }}</td>
+            <td>{{ etudiant.matricule }}</td>
+            <td>{{ etudiant.filiere.nom|default:'-' }}</td>
+             <td>{{ etudiant.licence|default:'-' }}</td>
+            <td>{% if etudiant.actif %}<span class="badge bg-label-success">Actif</span>{% else %}<span class="badge bg-label-secondary">Inactif</span>{% endif %}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="{% url 'administration:notes' %}?matricule={{ etudiant.matricule|urlencode }}" class="btn btn-sm btn-label-primary">Bulletin</a>
+              </div>
+            </td>
+          </tr>
+           <tr class="admin-inline-edit-row">
+             <td colspan="10">
+              <form method="post" enctype="multipart/form-data" class="row g-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_etudiant">
+                <input type="hidden" name="object_id" value="{{ etudiant.id }}">
+                 <div class="col-md-2"><label class="form-label small mb-1">Prenom</label><input class="form-control form-control-sm" name="prenom" value="{{ etudiant.utilisateur.first_name }}"></div>
+                 <div class="col-md-2"><label class="form-label small mb-1">Nom</label><input class="form-control form-control-sm" name="nom" value="{{ etudiant.utilisateur.last_name }}"></div>
+                 <div class="col-md-2"><label class="form-label small mb-1">Email</label><input class="form-control form-control-sm" name="email" value="{{ etudiant.utilisateur.email }}"></div>
+                 <div class="col-md-2"><label class="form-label small mb-1">Matricule</label><input class="form-control form-control-sm" name="matricule" value="{{ etudiant.matricule }}"></div>
+                <div class="col-md-2"><label class="form-label small mb-1">Filiere</label><select class="form-select form-select-sm" name="filiere">{% for filiere in filieres %}<option value="{{ filiere.id }}" {% if etudiant.filiere_id == filiere.id %}selected{% endif %}>{{ filiere.nom }}</option>{% endfor %}</select></div>
+                  <div class="col-md-1"><label class="form-label small mb-1">Niveau</label><select class="form-select form-select-sm" name="licence">{% for licence in licences %}<option value="{{ licence.id }}" {% if etudiant.licence_id == licence.id %}selected{% endif %}>{{ licence }}</option>{% endfor %}</select></div>
+                  <div class="col-md-1"><label class="form-label small mb-1">Telephone</label><input class="form-control form-control-sm" name="telephone" value="{{ etudiant.telephone }}" placeholder="Telephone"></div><div class="col-md-1"><label class="form-label small mb-1">Photo</label><input class="form-control form-control-sm" type="file" name="photo" accept="image/*" title="Photo"></div>
+                <div class="col-md-1"><label class="form-label small mb-1">Statut</label><select class="form-select form-select-sm" name="actif"><option value="True" {% if etudiant.actif %}selected{% endif %}>Actif</option><option value="False" {% if not etudiant.actif %}selected{% endif %}>Inactif</option></select></div>
+                 <div class="col-md-1 d-grid"><button class="btn btn-sm btn-outline-primary">Mise a jour</button></div>
+              </form>
+              <form method="post" class="mt-1" onsubmit="return confirm('Supprimer cet etudiant ?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_etudiant">
+                <input type="hidden" name="object_id" value="{{ etudiant.id }}">
+                <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+         {% empty %}
+           <tr><td colspan="10" class="text-muted">Aucun etudiant trouve. Commencez par en ajouter un ci-dessus.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'administration/_pagination.html' %}
+</div>
+{% endblock %}

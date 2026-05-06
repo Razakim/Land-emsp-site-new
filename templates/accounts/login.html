@@ -1,0 +1,32 @@
+﻿{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Connexion - EMSP{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+{% block content %}
+<section class="auth-shell">
+  <div class="auth-panel">
+    <div class="auth-brand">
+      <span>EMSP</span>
+      <strong>Administration</strong>
+    </div>
+    <div class="auth-copy">
+      <h1>Connexion administration</h1>
+      <p>Accedez au pilotage academique, financier et operationnel de l'etablissement.</p>
+    </div>
+  </div>
+  <div class="auth-card">
+    <h2>Se connecter</h2>
+    <p class="auth-muted">Utilisez votre compte administrateur.</p>
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <label for="id_username">Nom utilisateur</label>
+      {{ form.username }}
+      <label for="id_password">Mot de passe</label>
+      {{ form.password }}
+      <button class="btn auth-submit">Se connecter</button>
+    </form>
+    <p class="auth-footer-text">Pas encore de compte ? <a href="{% url 'accounts:register' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">Creer un compte</a></p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,98 @@
+﻿{% extends 'base/base_admin.html' %}
+{% block title %}Saisie des notes - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:notes' %}">Notes</a> / Saisie{% endblock %}
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+  <div>
+    <h4 class="admin-page-title mb-1">Saisie des notes</h4>
+    <p class="text-muted mb-0">Saisissez le controle continu et l'examen. Les notes sont reportees directement sur le bulletin.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'administration:notes' %}">Retour aux notes</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3"><label class="form-label">Filiere</label><select class="form-select" name="filiere" required><option value="">Selectionner</option>{% for filiere in filieres %}<option value="{{ filiere.id }}" {% if filters.filiere == filiere.id|stringformat:'s' %}selected{% endif %}>{{ filiere.nom }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><label class="form-label">Niveau</label><select class="form-select" name="licence"><option value="">Tous</option>{% for licence in licences %}<option value="{{ licence.id }}" {% if filters.licence == licence.id|stringformat:'s' %}selected{% endif %}>{{ licence }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><label class="form-label">Semestre</label><select class="form-select" name="semestre" required><option value="">Selectionner</option>{% for semestre in semestres %}<option value="{{ semestre.id }}" {% if filters.semestre == semestre.id|stringformat:'s' %}selected{% endif %}>{{ semestre }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><label class="form-label">Annee</label><select class="form-select" name="annee_academique" required><option value="">Selectionner</option>{% for annee in annees_academiques %}<option value="{{ annee.id }}" {% if filters.annee_academique == annee.id|stringformat:'s' %}selected{% endif %}>{{ annee.libelle }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><label class="form-label">Matiere</label><select class="form-select" name="matiere" required><option value="">Selectionner</option>{% for matiere in matieres %}<option value="{{ matiere.id }}" {% if filters.matiere == matiere.id|stringformat:'s' %}selected{% endif %}>{{ matiere.nom }}</option>{% endfor %}</select></div>
+      <div class="col-md-1 d-grid"><button class="btn btn-primary">Charger</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex flex-column flex-lg-row justify-content-between gap-2">
+    <div>
+      <h5 class="mb-1">Feuille de saisie</h5>
+      <small class="text-muted">{{ selected_matiere|default:'Matiere non selectionnee' }}{% if selected_semestre %} - {{ selected_semestre }}{% endif %}{% if selected_annee %} - {{ selected_annee.libelle }}{% endif %}</small>
+    </div>
+    <span class="badge bg-label-primary">CCC 40% / Examen 60%</span>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save_notes">
+    {% for key, value in filters.items %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle notes-entry-table">
+        <thead><tr><th>Etudiant</th><th>Professeur</th><th>Coeff</th><th>Zone CCC</th><th>Zone Examen</th><th>Finale</th><th>Bulletin</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for row in notes_rows %}
+            <tr>
+              <td><input type="hidden" name="etudiant_ids" value="{{ row.etudiant.id }}"><div class="fw-semibold">{{ row.etudiant.nom_complet }}</div><small class="text-muted">{{ row.etudiant.matricule }}</small></td>
+              <td><select class="form-select form-select-sm" name="professeur_{{ row.etudiant.id }}"><option value="">--</option>{% for professeur in professeurs %}<option value="{{ professeur.id }}" {% if row.note.professeur_id == professeur.id %}selected{% endif %}>{{ professeur.nom_complet }}</option>{% endfor %}</select></td>
+              <td><input class="form-control form-control-sm" type="number" min="1" name="coefficient_{{ row.etudiant.id }}" value="{{ row.note.coefficient|default:1 }}"></td>
+              <td>
+                <label class="visually-hidden" for="note-cc-{{ row.etudiant.id }}">Note CCC / 20</label>
+                <input id="note-cc-{{ row.etudiant.id }}" class="form-control form-control-sm note-cc-input" type="number" step="0.01" min="0" max="20" name="note_cc_{{ row.etudiant.id }}" value="{{ row.note.note_cc|default:'' }}" placeholder="CCC / 20" data-student="{{ row.etudiant.id }}">
+              </td>
+              <td>
+                <label class="visually-hidden" for="note-examen-{{ row.etudiant.id }}">Note Examen / 20</label>
+                <input id="note-examen-{{ row.etudiant.id }}" class="form-control form-control-sm note-exam-input" type="number" step="0.01" min="0" max="20" name="note_examen_{{ row.etudiant.id }}" value="{{ row.note.note_examen|default:'' }}" placeholder="Examen / 20" data-student="{{ row.etudiant.id }}">
+              </td>
+              <td><strong class="note-final-value" data-student="{{ row.etudiant.id }}">{{ row.note.note_finale|default:'-' }}</strong></td>
+              <td>{% if row.note %}<span class="badge bg-label-success">Sur bulletin</span>{% else %}<span class="badge bg-label-warning">Non reporte</span>{% endif %}</td>
+              <td>{% if row.note %}<button class="btn btn-sm btn-label-danger" name="action" value="delete_note_saisie" formaction="" onclick="this.form.note_id.value='{{ row.note.id }}'">Retirer</button>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="8" class="text-center text-muted py-4">Selectionnez une filiere, un semestre, une annee et une matiere pour charger les etudiants.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <input type="hidden" name="note_id" value="">
+    <div class="card-footer d-flex flex-wrap justify-content-end gap-2">
+      <button class="btn btn-label-primary" name="publie" value="False" {% if not notes_rows %}disabled{% endif %}>Enregistrer</button>
+      <button class="btn btn-primary" name="publie" value="True" {% if not notes_rows %}disabled{% endif %}>Publier sur les bulletins</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    function numberValue(input) {
+      var value = parseFloat(input?.value || '0');
+      if (Number.isNaN(value)) return 0;
+      return Math.min(Math.max(value, 0), 20);
+    }
+
+    function updateFinal(studentId) {
+      var cc = numberValue(document.querySelector('.note-cc-input[data-student="' + studentId + '"]'));
+      var exam = numberValue(document.querySelector('.note-exam-input[data-student="' + studentId + '"]'));
+      var finalNode = document.querySelector('.note-final-value[data-student="' + studentId + '"]');
+      if (finalNode) finalNode.textContent = (cc * 0.4 + exam * 0.6).toFixed(2);
+    }
+
+    document.querySelectorAll('.note-cc-input, .note-exam-input').forEach(function (input) {
+      updateFinal(input.dataset.student);
+      input.addEventListener('input', function () {
+        updateFinal(input.dataset.student);
+      });
+    });
+  });
+</script>
+{% endblock %}

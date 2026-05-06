@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" class="layout-menu-fixed layout-navbar-fixed" data-bs-theme="light" data-assets-path="{% static 'assets/' %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <title>{% block title %}Administration EMSP{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'assets/vendor/css/core.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/demo.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/node-waves/node-waves.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/admin_custom.css' %}">
+  <script src="{% static 'assets/vendor/js/helpers.js' %}"></script>
+  <script src="{% static 'assets/js/config.js' %}"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+      <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+        <div class="app-brand demo">
+          <a href="{% url 'administration:dashboard' %}" class="app-brand-link">
+            <span class="app-brand-text demo menu-text fw-semibold ms-2">EMSP ADMINISTRATION</span>
+          </a>
+        </div>
+        <div class="px-3 pb-3 border-bottom border-light-subtle admin-user-panel">
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar avatar-sm bg-label-primary admin-avatar-pulse"><span class="avatar-initial rounded-circle">{{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|upper }}</span></div>
+            <div>
+              <div class="fw-semibold text-truncate admin-profile-name">{{ admin_display_name|default:request.user.username }}</div>
+              <small class="admin-profile-role">Role: {{ admin_role|default:"Administration" }}</small>
+            </div>
+          </div>
+        </div>
+        <div class="menu-inner-shadow"></div>
+        <ul class="menu-inner py-1">
+          <li class="menu-header mt-2"><a href="{% url 'administration:dashboard' %}" class="menu-header-text">Tableau de bord</a></li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <a href="{% url 'administration:dashboard' %}" class="menu-link"><i class="menu-icon fa-solid fa-gauge"></i><div class="text-truncate">Vue d'ensemble</div></a>
+          </li>
+
+          <li class="menu-header mt-2"><a href="{% url 'administration:etudiants_liste' %}" class="menu-header-text">Academique</a></li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'etudiants_liste' or request.resolver_match.url_name == 'etudiant_detail' %}active{% endif %}">
+            <a href="{% url 'administration:etudiants_liste' %}" class="menu-link"><i class="menu-icon fa-solid fa-user-graduate"></i><div class="text-truncate">Etudiants</div></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'professeurs' %}active{% endif %}">
+            <a href="{% url 'administration:professeurs' %}" class="menu-link"><i class="menu-icon fa-solid fa-chalkboard-teacher"></i><div class="text-truncate">Professeurs</div></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'inscriptions' or request.resolver_match.url_name == 'dossier_detail' %}active{% endif %}">
+            <a href="{% url 'administration:inscriptions' %}" class="menu-link"><i class="menu-icon fa-solid fa-file-lines"></i><div class="text-truncate">Inscriptions & dossiers</div><span class="badge bg-danger rounded-pill ms-auto admin-badge-urgent">{{ badge_inscriptions_count|default:0 }}</span></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'notes' or request.resolver_match.url_name == 'notes_saisie' %}active{% endif %}">
+            <a href="{% url 'administration:notes' %}" class="menu-link"><i class="menu-icon fa-solid fa-file-alt"></i><div class="text-truncate">Notes</div><span class="badge bg-warning rounded-pill ms-auto admin-badge-notes">{{ notes_incompletes_count|default:0 }}</span></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'presences' %}active{% endif %}">
+            <a href="{% url 'administration:presences' %}" class="menu-link"><i class="menu-icon fa-solid fa-clipboard-check"></i><div class="text-truncate">Presences & absences</div></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'emplois_du_temps' %}active{% endif %}">
+            <a href="{% url 'administration:emplois_du_temps' %}" class="menu-link"><i class="menu-icon fa-solid fa-calendar-alt"></i><div class="text-truncate">Emplois du temps</div></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'evenements' %}active{% endif %}">
+            <a href="{% url 'administration:evenements' %}" class="menu-link"><i class="menu-icon fa-solid fa-calendar-star"></i><div class="text-truncate">Evenements & activites</div></a>
+          </li>
+
+          <li class="menu-header mt-2"><a href="{% url 'administration:paiements' %}" class="menu-header-text">Financier</a></li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'paiements' %}active{% endif %}">
+            <a href="{% url 'administration:paiements' %}" class="menu-link"><i class="menu-icon fa-solid fa-credit-card"></i><div class="text-truncate">Paiements & scolarite</div><span class="badge bg-danger rounded-pill ms-auto admin-badge-urgent">{{ badge_paiements_count|default:0 }}</span></a>
+          </li>
+
+          <li class="menu-header mt-2"><a href="{% url 'administration:bibliotheque_moderation' %}" class="menu-header-text">Contenus</a></li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'bibliotheque_moderation' %}active{% endif %}">
+            <a href="{% url 'administration:bibliotheque_moderation' %}" class="menu-link"><i class="menu-icon fa-solid fa-book-open"></i><div class="text-truncate">Bibliotheque moderation</div><span class="badge bg-warning rounded-pill ms-auto admin-badge-moderation">{{ badge_bibliotheque_count|default:0 }}</span></a>
+          </li>
+
+          <li class="menu-header mt-2"><a href="{% url 'administration:utilisateurs' %}" class="menu-header-text">Systeme</a></li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'utilisateurs' %}active{% endif %}">
+            <a href="{% url 'administration:utilisateurs' %}" class="menu-link"><i class="menu-icon fa-solid fa-users-cog"></i><div class="text-truncate">Utilisateurs & roles</div></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'transport_cars' %}active{% endif %}">
+            <a href="{% url 'administration:transport_cars' %}" class="menu-link"><i class="menu-icon fa-solid fa-bus"></i><div class="text-truncate">Gestion des cars</div></a>
+          </li>
+          <li class="menu-item {% if request.resolver_match.url_name == 'parametres' or request.resolver_match.url_name == 'parametres_tarifs' or request.resolver_match.url_name == 'parametres_paiements' %}active{% endif %}">
+            <a href="{% url 'administration:parametres' %}" class="menu-link"><i class="menu-icon fa-solid fa-sliders"></i><div class="text-truncate">Parametres</div></a>
+          </li>
+          <li class="menu-item">
+            <a href="{% url 'core:home' %}" class="menu-link"><i class="menu-icon icon-base ri ri-external-link-line"></i><div class="text-truncate">Retour site public</div></a>
+          </li>
+        </ul>
+      </aside>
+
+      <div class="layout-page">
+        <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+          <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
+            <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)"><i class="icon-base ri ri-menu-line icon-md"></i></a>
+          </div>
+          <div class="navbar-nav-right d-flex align-items-center w-100" id="navbar-collapse">
+            <div class="navbar-nav align-items-center me-3">
+              <div class="nav-item admin-breadcrumb text-muted">{% block breadcrumb %}Administration / Vue d'ensemble{% endblock %}</div>
+            </div>
+            <form class="navbar-nav align-items-center flex-grow-1" method="get" action="{% url 'administration:global_search' %}">
+              <div class="nav-item d-flex align-items-center w-100">
+                <i class="fa-solid fa-search admin-search-icon"></i>
+                <input type="search" name="q" class="form-control border-0 shadow-none admin-global-search" placeholder="Rechercher un etudiant, matricule, transaction..." aria-label="Recherche globale">
+              </div>
+            </form>
+            <ul class="navbar-nav flex-row align-items-center ms-auto">
+              <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-2">
+                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                  <i class="icon-base ri ri-notification-2-line icon-22px"></i>
+                  <span class="badge rounded-pill bg-danger badge-dot badge-notifications border"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end py-0">
+                  <li class="dropdown-menu-header border-bottom">
+                    <div class="dropdown-header d-flex align-items-center py-3">
+                      <h6 class="mb-0 me-auto">Notifications</h6>
+                      <span class="badge rounded-pill bg-label-danger">{{ badge_inscriptions_count|default:0 }} dossiers, {{ badge_paiements_count|default:0 }} paiements</span>
+                    </div>
+                  </li>
+                  <li><a class="dropdown-item" href="{% url 'administration:inscriptions' %}">{{ badge_inscriptions_count|default:0 }} dossiers en attente</a></li>
+                  <li><a class="dropdown-item" href="{% url 'administration:paiements' %}">{{ badge_paiements_count|default:0 }} paiements a verifier</a></li>
+                  <li><a class="dropdown-item" href="{% url 'administration:bibliotheque_moderation' %}">{{ badge_bibliotheque_count|default:0 }} documents a moderer</a></li>
+                </ul>
+              </li>
+              <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
+                  <div class="avatar avatar-online"><span class="avatar-initial rounded-circle bg-label-primary">{{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|upper }}</span></div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end mt-3 py-2">
+                  <li><a class="dropdown-item" href="{% url 'administration:profil_admin' %}">Mon profil</a></li>
+                  <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}">Changer mot de passe</a></li>
+                  <li><div class="dropdown-divider"></div></li>
+                  <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Deconnexion</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <div class="content-wrapper">
+          <div class="container-xxl flex-grow-1 container-p-y">
+            {% if messages %}
+              <div class="mb-3">
+                {% for message in messages %}
+                  <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+          </div>
+          <footer class="content-footer footer bg-footer-theme">
+            <div class="container-xxl">
+              <div class="footer-container d-flex align-items-center justify-content-between py-3 flex-md-row flex-column">
+                <div class="mb-2 mb-md-0">EMSP - Tableau de bord administration</div>
+                <div class="d-none d-lg-inline-block">
+                  <a href="{% url 'administration:dashboard' %}" class="footer-link me-3">Dashboard</a>
+                  <a href="{% url 'administration:parametres' %}" class="footer-link me-3">Parametres</a>
+                  <a href="{% url 'core:home' %}" class="footer-link">Site public</a>
+                </div>
+              </div>
+            </div>
+          </footer>
+          <div class="content-backdrop fade"></div>
+        </div>
+      </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+    <div class="drag-target"></div>
+  </div>
+
+  <script src="{% static 'assets/vendor/libs/jquery/jquery.js' %}"></script>
+  <script src="{% static 'assets/vendor/libs/popper/popper.js' %}"></script>
+  <script src="{% static 'assets/vendor/js/bootstrap.js' %}"></script>
+  <script src="{% static 'assets/vendor/libs/node-waves/node-waves.js' %}"></script>
+  <script src="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js' %}"></script>
+  <script src="{% static 'assets/vendor/js/menu.js' %}"></script>
+  <script src="{% static 'assets/js/main.js' %}"></script>
+  <script src="{% static 'js/admin.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

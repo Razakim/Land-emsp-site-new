@@ -1,0 +1,192 @@
+﻿{% extends 'base/base_admin.html' %}
+{% block title %}Notes - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:etudiants_liste' %}">Academique</a> / Notes{% endblock %}
+{% block content %}
+<h4 class="admin-page-title">Gestion des notes</h4>
+<p class="admin-page-subtitle">Navigation filiere, licence, semestre et suivi de la completude des saisies.</p>
+
+<div class="card mb-4">
+  <div class="card-header"><h5 class="mb-0">Generer un bulletin PDF par matricule</h5></div>
+  <div class="card-body">
+    <form method="get" action="{% url 'administration:bulletin_pdf_matricule' %}" target="_blank" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">Matricule etudiant</label>
+        <input type="text" name="matricule" class="form-control" value="{{ filters.matricule }}" placeholder="Ex: prenom.nom@fsmenum2026.emsp.int" required>
+      </div>
+      <div class="col-md-3 d-grid">
+        <button class="btn btn-primary">Ouvrir le bulletin PDF</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <input type="hidden" name="matricule" value="{{ filters.matricule }}">
+      <div class="col-md-3">
+        <label class="form-label">Filiere</label>
+        <select class="form-select" name="filiere" onchange="this.form.submit()">
+          <option value="">Filiere</option>
+          {% for filiere in filieres %}
+            <option value="{{ filiere.id }}" {% if filters.filiere == filiere.id|stringformat:'s' %}selected{% endif %}>{{ filiere.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Niveau</label>
+        <select class="form-select" name="licence" onchange="this.form.submit()">
+          <option value="">Licence / Master</option>
+          {% for licence in licences %}
+            <option value="{{ licence.id }}" {% if filters.licence == licence.id|stringformat:'s' %}selected{% endif %}>{{ licence }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Semestre</label>
+        <select class="form-select" name="semestre" onchange="this.form.submit()">
+          <option value="">Semestre</option>
+          {% for semestre in semestres %}
+            <option value="{{ semestre.id }}" {% if filters.semestre == semestre.id|stringformat:'s' %}selected{% endif %}>{{ semestre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Annee academique</label>
+        <select class="form-select" name="annee_academique" onchange="this.form.submit()">
+          <option value="">Annee academique</option>
+          {% for annee in annees_academiques %}
+            <option value="{{ annee.id }}" {% if filters.annee_academique == annee.id|stringformat:'s' %}selected{% endif %}>{{ annee.libelle }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Matiere a saisir</label>
+        <select class="form-select" name="matiere">
+          <option value="">Choisir une matiere</option>
+          {% for matiere in matieres_pour_saisie %}
+            <option value="{{ matiere.id }}" {% if filters.matiere == matiere.id|stringformat:'s' %}selected{% endif %}>{{ matiere.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1 d-grid">
+        <button class="btn btn-outline-primary">Filtrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header d-flex flex-column flex-lg-row justify-content-between gap-2">
+    <div>
+      <h5 class="mb-1">Saisie rapide des notes</h5>
+      <small class="text-muted">{{ selected_matiere|default:"Selectionnez une matiere, un semestre et une annee" }}</small>
+    </div>
+    <span class="badge bg-label-primary">CCC 40% / Examen 60%</span>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save_notes">
+    {% for key, value in filters.items %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle notes-entry-table">
+        <thead><tr><th>Etudiant</th><th>Professeur</th><th>Coeff</th><th>Zone CCC</th><th>Zone Examen</th><th>Moyenne</th></tr></thead>
+        <tbody>
+          {% for row in notes_entry_rows %}
+            <tr>
+              <td><input type="hidden" name="etudiant_ids" value="{{ row.etudiant.id }}"><div class="fw-semibold">{{ row.etudiant.nom_complet }}</div><small class="text-muted">{{ row.etudiant.matricule }}</small></td>
+              <td><select class="form-select form-select-sm" name="professeur_{{ row.etudiant.id }}"><option value="">--</option>{% for professeur in professeurs %}<option value="{{ professeur.id }}" {% if row.note.professeur_id == professeur.id %}selected{% endif %}>{{ professeur.nom_complet }}</option>{% endfor %}</select></td>
+              <td><input class="form-control form-control-sm" type="number" min="1" name="coefficient_{{ row.etudiant.id }}" value="{{ row.note.coefficient|default:1 }}"></td>
+              <td>
+                <label class="visually-hidden" for="note-cc-{{ row.etudiant.id }}">Note CCC / 20</label>
+                <input id="note-cc-{{ row.etudiant.id }}" class="form-control form-control-sm note-cc-input" type="number" step="0.01" min="0" max="20" name="note_cc_{{ row.etudiant.id }}" value="{{ row.note.note_cc|default:'' }}" placeholder="CCC / 20" data-student="{{ row.etudiant.id }}">
+              </td>
+              <td>
+                <label class="visually-hidden" for="note-examen-{{ row.etudiant.id }}">Note Examen / 20</label>
+                <input id="note-examen-{{ row.etudiant.id }}" class="form-control form-control-sm note-exam-input" type="number" step="0.01" min="0" max="20" name="note_examen_{{ row.etudiant.id }}" value="{{ row.note.note_examen|default:'' }}" placeholder="Examen / 20" data-student="{{ row.etudiant.id }}">
+              </td>
+              <td><strong class="note-final-value" data-student="{{ row.etudiant.id }}">{{ row.note.note_finale|default:"-" }}</strong></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">Choisissez une filiere, un semestre, une annee et une matiere puis cliquez sur Filtrer.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-2">
+      <button class="btn btn-label-primary" name="publie" value="False" {% if not notes_entry_rows %}disabled{% endif %}>Enregistrer</button>
+      <button class="btn btn-primary" name="publie" value="True" {% if not notes_entry_rows %}disabled{% endif %}>Publier</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Matiere</th><th>Professeur</th><th>CCC saisi</th><th>Exam saisi</th><th>Statut</th><th></th></tr></thead>
+      <tbody>
+        {% for matiere in matieres_stats %}
+        <tr>
+          <td>{{ matiere.nom }}</td>
+          <td>{% if matiere.professeurs.first %}{{ matiere.professeurs.first.nom_complet }}{% else %}<span class="text-muted">Non assigne</span>{% endif %}</td>
+          <td>{% if matiere.cc_saisi %}<span class="badge bg-label-success">Oui</span>{% else %}<span class="badge bg-label-danger">Non</span>{% endif %}</td>
+          <td>{% if matiere.exam_saisi %}<span class="badge bg-label-success">Oui</span>{% else %}<span class="badge bg-label-danger">Non</span>{% endif %}</td>
+          <td>{% if matiere.saisie_complete %}<span class="badge bg-label-success">Complet</span>{% else %}<span class="badge bg-label-danger">En attente</span>{% endif %}</td>
+          <td><a href="{% url 'administration:notes_saisie' %}?filiere={{ filters.filiere }}&licence={{ filters.licence }}&semestre={{ filters.semestre }}&annee_academique={{ filters.annee_academique }}&matiere={{ matiere.id }}" class="btn btn-sm btn-label-primary">Ouvrir</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">Aucune matiere configuree.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header"><h5 class="mb-0">Derniers bulletins mis a jour</h5></div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Etudiant</th><th>Matricule</th><th>Annee</th><th>Semestre</th><th>Moyenne</th><th>Decision</th><th></th></tr></thead>
+      <tbody>
+        {% for bulletin in bulletins_recent %}
+          <tr>
+            <td>{{ bulletin.etudiant.nom_complet }}</td>
+            <td>{{ bulletin.etudiant.matricule }}</td>
+            <td>{{ bulletin.annee_academique.libelle }}</td>
+             <td>{{ bulletin.semestre }}</td>
+            <td>{{ bulletin.moyenne }}/20</td>
+            <td>{{ bulletin.get_decision_display }}</td>
+            <td><a class="btn btn-sm btn-label-primary" href="{% url 'administration:etudiant_detail' bulletin.etudiant.id %}">Ouvrir</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-muted">Aucun bulletin disponible pour le moment.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    function numberValue(input) {
+      var value = parseFloat(input?.value || '0');
+      if (Number.isNaN(value)) return 0;
+      return Math.min(Math.max(value, 0), 20);
+    }
+    function updateFinal(studentId) {
+      var cc = numberValue(document.querySelector('.note-cc-input[data-student="' + studentId + '"]'));
+      var exam = numberValue(document.querySelector('.note-exam-input[data-student="' + studentId + '"]'));
+      var finalNode = document.querySelector('.note-final-value[data-student="' + studentId + '"]');
+      if (finalNode) finalNode.textContent = (cc * 0.4 + exam * 0.6).toFixed(2);
+    }
+    document.querySelectorAll('.note-cc-input, .note-exam-input').forEach(function (input) {
+      updateFinal(input.dataset.student);
+      input.addEventListener('input', function () { updateFinal(input.dataset.student); });
+    });
+  });
+</script>
+{% endblock %}
+
+

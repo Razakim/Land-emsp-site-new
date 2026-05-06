@@ -1,0 +1,543 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}EMSP - Ecole Multinationale Superieure des Postes d'Abidjan{% endblock %}
+
+{% block content %}
+<div id="newsTicker" class="news-ticker" aria-label="Actualites recentes">
+  <div class="news-ticker-track">
+    <span class="news-item"><strong>Actualites recentes:</strong> Journee sportive inter-etablissements organisee sur le campus EMSP.</span>
+    <span class="news-item">Remise de bourse aux etudiants meritants au titre de l'annee academique en cours.</span>
+    <span class="news-item">Conge a venir en mai: calendrier des jours feries et suspension des cours a consulter.</span>
+  </div>
+  <div class="news-ticker-track" aria-hidden="true">
+    <span class="news-item"><strong>Actualites recentes:</strong> Journee sportive inter-etablissements organisee sur le campus EMSP.</span>
+    <span class="news-item">Remise de bourse aux etudiants meritants au titre de l'annee academique en cours.</span>
+    <span class="news-item">Conge a venir en mai: calendrier des jours feries et suspension des cours a consulter.</span>
+  </div>
+</div>
+
+<nav id="navbar" class="navbar navbar-expand-lg emsp-navbar fixed-top">
+  <div class="container-fluid px-3 px-lg-4">
+    <a class="navbar-brand emsp-brand" href="/">
+      <img src="{% static 'img/logo.png' %}" alt="Logo EMSP" class="emsp-logo">
+      <span>EMSP <span class="badge">Abidjan</span></span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#emspNav" aria-controls="emspNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="mdi mdi-menu"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="emspNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link active" href="/">Accueil</a></li>
+        <li class="nav-item"><a class="nav-link" href="/institution/">Institution</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="formationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Formations</a>
+          <ul class="dropdown-menu emsp-dropdown" aria-labelledby="formationsDropdown">
+            <li><a class="dropdown-item" href="/formations/#fsp">FSP</a></li>
+            <li><a class="dropdown-item" href="/formations/#fsmenum">FS MENUM</a></li>
+            <li><a class="dropdown-item" href="/formations/#certificats">Certificats</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="/mediatheque/">Mediatheque</a></li>
+        <li class="nav-item"><a class="nav-link" href="/journal/">Journal</a></li>
+        <li class="nav-item"><a class="nav-link" href="/concours/">Concours</a></li>
+        <li class="nav-item"><a class="nav-link" href="/faq/">FAQ</a></li>
+      </ul>
+      <div class="d-flex gap-2 navbar-portal-actions">
+        <a class="btn btn-space-student btn-sm" href="https://emsp.k12net.com/" target="_blank" rel="noopener">Espace ETUDIANT</a>
+        <a class="btn btn-space-admin btn-sm" href="/administration/">Espace ADMINISTRATION</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="emsp-hero">
+  <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5600" data-bs-pause="hover">
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"></button>
+    </div>
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <div class="hero-slide" style="background-image:url('{% static "img/home/phototheque/Accueil du Ministre de tutel.jpg" %}')"></div>
+      </div>
+      <div class="carousel-item">
+        <div class="hero-slide" style="background-image:url('{% static "img/home/phototheque/Jourrnee de lutte contre le cancer.jpg" %}')"></div>
+      </div>
+      <div class="carousel-item">
+        <div class="hero-slide" style="background-image:url('{% static "img/home/phototheque/Nos dirigeants qui honorent le president du BDE.jpg" %}')"></div>
+      </div>
+      <div class="carousel-item">
+        <div class="hero-slide" style="background-image:url('{% static 'img/carousel/img4.jpg' %}')"></div>
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+  </div>
+
+  <div class="container hero-content">
+    <span class="hero-tag"><span class="dot"></span>Ecole Multinationale Superieure des Postes d'Abidjan</span>
+    <h1 class="title-letter">Former les leaders de la <span>transformation digitale postale</span> en Afrique</h1>
+    <p>Depuis 1970, l'EMSP accompagne la formation des Controleurs, Inspecteurs et Administrateurs des Postes et Services Financiers pour une Poste Sans Frontieres.</p>
+    <div class="d-flex flex-wrap gap-3">
+      <a class="btn btn-success" href="/formations/">Decouvrir les formations</a>
+      <a class="btn btn-outline-light" href="/inscription/">Deposer une candidature</a>
+    </div>
+    <div class="hero-mini-stats">
+      <div><strong>8</strong><span>Etats fondateurs</span></div>
+      <div><strong>1970</strong><span>Annee de creation</span></div>
+      <div><strong>+50</strong><span>Ans d'expertise</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="key-metrics">
+  <div class="container">
+    <div class="row g-3">
+      <div class="col-6 col-lg-3"><article class="metric-card"><h3 data-count="8">0</h3><p>Etats membres fondateurs</p></article></div>
+      <div class="col-6 col-lg-3"><article class="metric-card"><h3 data-count="10">0</h3><p>Semestres FS MENUM</p></article></div>
+      <div class="col-6 col-lg-3"><article class="metric-card"><h3 data-count="18">0</h3><p>Mois du MS RegNUM</p></article></div>
+      <div class="col-6 col-lg-3"><article class="metric-card"><h3 data-count="{{ nb_etudiants|default:120 }}">0</h3><p>Apprenants inscrits</p></article></div>
+    </div>
+  </div>
+</section>
+
+<section class="section py-5">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <span class="section-kicker">Presentation de l'institution</span>
+        <h2>Une institution intergouvernementale dediee aux Postes et services financiers</h2>
+        <p>L'EMSP a ete creee en 1970 sous l'egide de l'Union Postale Universelle, a l'initiative du Benin, Burkina Faso, Cote d'Ivoire, Mali, Mauritanie, Niger, Senegal et Togo.</p>
+        <ul class="feature-list">
+          <li>Mission: former Controleurs, Inspecteurs et Administrateurs des Postes et PSF.</li>
+          <li>Vision: accelerer la transformation digitale des Postes africaines.</li>
+          <li>Slogan: "Pour une Poste Sans Frontieres".</li>
+          <li>Siege: Treichville Zone 3, Km 4, Boulevard de Marseille, Abidjan.</li>
+        </ul>
+        <a class="btn btn-outline-success" href="/institution/">En savoir plus sur l'EMSP</a>
+      </div>
+      <div class="col-lg-6">
+        <div class="institution-media">
+          <img src="{% static 'img/home/autres/presentation.jpg' %}" alt="EMSP campus" class="img-fluid rounded-4">
+          <span class="floating-badge">Depuis 1970</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-light py-5">
+  <div class="container">
+    <div class="section-intro mb-4">
+      <h2>Equipe dirigeante</h2>
+      <p>Une gouvernance orientee excellence academique et innovation numerique.</p>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <article class="formation-card">
+          {% if directeur_general_image %}
+            <img src="{% static directeur_general_image %}" alt="Photo du Directeur General" class="img-fluid rounded-3 mb-3 w-100">
+          {% endif %}
+          <h3>Michel TOURE</h3>
+          <p>Directeur General de l'EMSP</p>
+          <a href="mailto:michel.toure@emsp.int">michel.toure@emsp.int</a>
+        </article>
+      </div>
+      <div class="col-md-6">
+        <article class="formation-card">
+          {% if directeur_etudes_image %}
+            <img src="{% static directeur_etudes_image %}" alt="Photo du Directeur des Etudes" class="img-fluid rounded-3 mb-3 w-100">
+          {% endif %}
+          <h3>Amadou Abdou WAZIRI</h3>
+          <p>Directeur des Etudes</p>
+          <a href="mailto:amadou.waziri@emsp.int">amadou.waziri@emsp.int</a>
+        </article>
+      </div>
+      <div class="col-12">
+        <article class="formation-card">
+          <h3>Mot du Directeur General</h3>
+          <p>L'EMSP promeut les Formations Superieures en Management de l'Economie Numerique (FS MENUM) pour former des managers capables de piloter la transformation des organisations postales et numeriques.</p>
+          <a href="/formations/">Voir les programmes FS MENUM</a>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <!-- Titre plus sobre, sans barre de soulignement clichée -->
+    <div class="section-intro mb-5">
+      <h2 class="fw-bold text-dark mb-1">Nos Formations</h2>
+      <div class="section-intro-line"></div>
+    </div>
+
+<section class="section py-5 training-section">
+  <div class="background-overlay" aria-hidden="true"></div>
+  <div class="container">
+    
+    <div class="row g-4">
+      <!-- Formation 1 -->
+      <div class="col-md-6">
+        <article class="h-100 p-4 border-start border-4 border-primary bg-white">
+          <div class="mb-3">
+            <i class="fas fa-landmark text-primary mb-2"></i>
+            <span class="d-block small text-uppercase fw-bold text-muted letter-spacing-1">FCP</span>
+          </div>
+          <h4 class="fw-bold mb-3">Formations Classiques Postales</h4>
+          <p class="text-secondary mb-0">Administrateur, Inspecteur et Contrôleur. Un cursus de 9 mois alliant théorie rigoureuse et projet professionnel final.</p>
+        </article>
+      </div>
+
+      <!-- Formation 2 -->
+      <div class="col-md-6">
+        <article class="h-100 p-4 border-start border-4 border-success bg-white">
+          <div class="mb-3">
+            <i class="fas fa-microchip text-success mb-2"></i>
+            <span class="d-block small text-uppercase fw-bold text-muted">FS MENUM</span>
+          </div>
+          <h4 class="fw-bold mb-3">Management de l'Économie Numérique</h4>
+          <p class="text-secondary mb-0">Licences et Masters (LNUM, FDIG, MDIG...). Un parcours académique complet structuré sur 10 semestres.</p>
+        </article>
+      </div>
+
+      <!-- Formation 3 -->
+      <div class="col-md-6">
+        <article class="h-100 p-4 border-start border-4 border-warning bg-white">
+          <div class="mb-3">
+            <i class="fas fa-shield-alt text-warning mb-2"></i>
+            <span class="d-block small text-uppercase fw-bold text-muted">MS</span>
+          </div>
+          <h4 class="fw-bold mb-3">Mastère Spécialisé RegNUM</h4>
+          <p class="text-secondary mb-0">Régulation du numérique. 18 mois en alternance, diplôme d'excellence en partenariat avec <strong>Télécom Paris</strong>.</p>
+        </article>
+      </div>
+
+      <!-- Formation 4 -->
+      <div class="col-md-6">
+        <article class="h-100 p-4 border-start border-4 border-danger bg-white">
+          <div class="mb-3">
+            <i class="fas fa-users-cog text-danger mb-2"></i>
+            <span class="d-block small text-uppercase fw-bold text-muted">FCQ</span>
+          </div>
+          <h4 class="fw-bold mb-3">Formations Continues Qualifiantes</h4>
+          <p class="text-secondary mb-0">Sessions courtes, e-learning et programmes sur-mesure adaptés aux besoins spécifiques des non-francophones.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-light py-5">
+  <div class="container">
+    <div class="section-intro d-flex justify-content-between align-items-lg-end mb-3 flex-wrap gap-3">
+      <div>
+        <h2>Admissions et orientation etudiante</h2>
+        <p>Concours FCP, admissions FS MENUM / MS RegNUM et vie de campus.</p>
+      </div>
+      <a class="btn btn-outline-success" href="/concours/">Voir les concours</a>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-4">
+        <article class="resource-card">
+          <span class="badge bg-success-subtle text-success">Admission FCP</span>
+          <h3>Concours et selection par pays membre</h3>
+          <p>La procedure des concours est transmise aux ministeres, regulateurs et operateurs designes qui ouvrent les centres de composition.</p>
+          <a href="/concours/">Details de la procedure</a>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <article class="resource-card">
+          <span class="badge bg-success-subtle text-success">Espace etudiant</span>
+          <h3>Services de vie academique</h3>
+          <p>Scolarite, stages, vie sur le campus, bibliotheque, vie associative, visites et soins medicaux.</p>
+          <a href="/espace-etudiant/">Explorer l'espace etudiant</a>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <article class="resource-card">
+          <span class="badge bg-success-subtle text-success">FAQ</span>
+          <h3>Questions frequentes</h3>
+          <p>Formation, conditions d'acces, frais et financement, hebergement-restauration-transport.</p>
+          <a href="/faq/">Consulter la FAQ</a>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-light py-5">
+  <div class="container">
+    <div class="section-intro mb-4">
+      <h2>Mediatheque EMSP</h2>
+      <p>Phototheque et videotheque pour suivre les moments forts de l'institution.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-12">
+        <article class="resource-card media-preview-card media-preview-card--mixed">
+          <span class="badge bg-success-subtle text-success">Phototheque & Videotheque</span>
+          <h3>Apercu des medias recents</h3>
+          <div class="media-preview-split">
+            <div class="media-preview-grid media-preview-photos">
+              {% if media_photos_preview %}
+                {% for photo in media_photos_preview %}
+                <a class="media-preview-item" href="/mediatheque/#photo" aria-label="Voir album {{ forloop.counter }}">
+                  <img src="{% static photo.path %}" alt="{{ photo.title }}">
+                  <span class="overlay-icon"><i class="mdi mdi-image-multiple"></i></span>
+                  <span class="media-mini-title">{{ photo.title }}</span>
+                </a>
+                {% endfor %}
+              {% else %}
+                <a class="media-preview-item" href="/mediatheque/#photo" aria-label="Ajouter photos">
+                  <img src="{% static 'img/home/autres/presentation.jpg' %}" alt="Aucune photo locale">
+                  <span class="overlay-icon"><i class="mdi mdi-folder-image"></i></span>
+                </a>
+                <a class="media-preview-item" href="/mediatheque/#photo" aria-label="Ajouter photos">
+                  <img src="{% static 'img/home/autres/presentation.jpg' %}" alt="Aucune photo locale">
+                  <span class="overlay-icon"><i class="mdi mdi-folder-image"></i></span>
+                </a>
+                <a class="media-preview-item" href="/mediatheque/#photo" aria-label="Ajouter photos">
+                  <img src="{% static 'img/home/autres/presentation.jpg' %}" alt="Aucune photo locale">
+                  <span class="overlay-icon"><i class="mdi mdi-folder-image"></i></span>
+                </a>
+              {% endif %}
+            </div>
+
+            <div class="media-preview-video">
+              {% if media_videos_preview %}
+                {% with video=media_videos_preview.0 %}
+                <a class="media-preview-item" href="/mediatheque/#video" aria-label="Voir video a la une">
+                  <video class="media-hover-video" muted loop playsinline preload="metadata" poster="{% static video.poster %}" aria-label="{{ video.title }}">
+                    <source src="{% static video.path %}">
+                  </video>
+                  <span class="overlay-icon"><i class="mdi mdi-play-circle"></i></span>
+                  <span class="media-mini-title">{{ video.title }}</span>
+                </a>
+                {% endwith %}
+              {% else %}
+                <a class="media-preview-item" href="/mediatheque/#video" aria-label="Ajouter videos">
+                  <img src="{% static 'img/home/autres/presentation.jpg' %}" alt="Aucune video locale">
+                  <span class="overlay-icon"><i class="mdi mdi-video-plus"></i></span>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="/mediatheque/#photo">Voir les albums</a>
+            <a href="/mediatheque/#video">Voir les videos</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section py-5">
+  <div class="container">
+    <div class="section-intro mb-4">
+      <h2>Partenaires qui font confiance a l'EMSP</h2>
+      <p>Un reseau regional et international mobilise pour les competences postales et numeriques.</p>
+    </div>
+    {% if partner_logos %}
+      <div class="partner-marquee" aria-label="Logos des partenaires">
+        <div class="partner-track">
+          {% for logo in partner_logos %}
+            <div class="partner-logo"><img src="{% static logo.path %}" alt="{{ logo.alt }}"></div>
+          {% endfor %}
+        </div>
+        <div class="partner-track" aria-hidden="true">
+          {% for logo in partner_logos %}
+            <div class="partner-logo"><img src="{% static logo.path %}" alt=""></div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <p class="text-center text-muted mb-0">Ajoutez des logos dans <code>static/img/home/partenaires/</code>.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="cta-section py-5">
+  <div class="container section-intro">
+    <h2>Pret a rejoindre l'EMSP ?</h2>
+    <p>Choisissez votre parcours et integrez une institution de reference pour les Postes et le numerique en Afrique.</p>
+    <div class="d-flex justify-content-center justify-content-lg-start gap-3 flex-wrap mt-3">
+      <a class="btn btn-success" href="/inscription/">S'inscrire maintenant</a>
+      <a class="btn btn-outline-dark" href="/login/">Se connecter</a>
+    </div>
+    <small>Formations certifiantes - Accompagnement professionnel - Reseau panafricain</small>
+  </div>
+</section>
+
+<footer class="emsp-footer py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-3"><h4>EMSP Abidjan</h4><p>Ecole Multinationale Superieure des Postes au service de l'innovation postale africaine.</p></div>
+      <div class="col-md-3"><h5>Navigation</h5><ul><li><a href="/">Accueil</a></li><li><a href="/formations/">Formations</a></li><li><a href="/mediatheque/">Mediatheque</a></li><li><a href="/journal/">Journal</a></li><li><a href="/concours/">Concours</a></li></ul></div>
+      <div class="col-md-3"><h5>Plateforme</h5><ul><li><a href="/inscription/">S'inscrire</a></li><li><a href="/login/">Se connecter</a></li><li><a href="/faq/">FAQ</a></li><li><a href="/mediatheque/">Explorer</a></li></ul></div>
+      <div class="col-md-3">
+        <h5>Contact EMSP</h5>
+        <p>Abidjan, Treichville, Zone 3, Km 4, Boulevard de Marseille<br>+225 27 21 21 45 60 / +225 27 21 21 45 61<br>contact@emsp.int / info@emsp.int</p>
+        <p class="mb-0">Facebook - Twitter - LinkedIn - YouTube</p>
+      </div>
+    </div>
+    <div class="footer-bottom mt-4 pt-3">
+      <p class="mb-0">© 2026 EMSP Abidjan. Tous droits reserves. Institution intergouvernementale de formation postale et numerique.</p>
+      <small>Pour une Poste Sans Frontieres</small>
+    </div>
+  </div>
+</footer>
+<span class="c-cursor" data-js-cursor="" aria-hidden="true"></span>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const topbar = document.getElementById('topbar');
+    const navbar = document.getElementById('navbar');
+    let lastY = window.scrollY;
+
+    window.addEventListener('scroll', function () {
+      const currentY = window.scrollY;
+      if (topbar) {
+        topbar.classList.toggle('hide', currentY > lastY && currentY > 40);
+      }
+      if (navbar) {
+        navbar.classList.toggle('scrolled', currentY > 40);
+      }
+      lastY = currentY;
+    });
+
+    const counters = document.querySelectorAll('[data-count]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = parseInt(el.dataset.count || '0', 10);
+        let value = 0;
+        const step = Math.max(1, Math.ceil(target / 30));
+        const timer = setInterval(() => {
+          value += step;
+          if (value >= target) {
+            el.textContent = target.toLocaleString();
+            clearInterval(timer);
+            return;
+          }
+          el.textContent = value.toLocaleString();
+        }, 30);
+        observer.unobserve(el);
+      });
+    }, { threshold: 0.4 });
+
+    counters.forEach((counter) => observer.observe(counter));
+
+    const revealTargets = document.querySelectorAll('.section .container, .metric-card, .formation-card, .step-card, .resource-card, .testimonial, .partner-logo, .cta-section .container');
+    revealTargets.forEach((el) => el.classList.add('reveal-item'));
+
+    const revealObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.16, rootMargin: '0px 0px -40px 0px' });
+
+    revealTargets.forEach((el) => revealObserver.observe(el));
+
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dot = document.querySelector('[data-js-cursor]');
+
+    if (dot && isFinePointer && !prefersReducedMotion) {
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+      let dotX = mouseX;
+      let dotY = mouseY;
+      dot.classList.add('is-visible');
+
+      window.addEventListener('mousemove', function (event) {
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+      });
+
+      function animateDot() {
+        dotX += (mouseX - dotX) * 0.16;
+        dotY += (mouseY - dotY) * 0.16;
+        dot.style.transform = "translate3d(" + dotX + "px, " + dotY + "px, 0) translate(-50%, -50%)";
+        requestAnimationFrame(animateDot);
+      }
+
+      requestAnimationFrame(animateDot);
+    }
+
+    const titleTargets = document.querySelectorAll('.title-letter');
+
+    function splitHeadingText(root) {
+      const nodes = Array.from(root.childNodes);
+      nodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent || '';
+          if (!text.trim()) return;
+          const fragment = document.createDocumentFragment();
+          Array.from(text).forEach((character) => {
+            if (character === ' ') {
+              fragment.appendChild(document.createTextNode(' '));
+              return;
+            }
+            const span = document.createElement('span');
+            span.className = 'title-letter-char';
+            span.textContent = character;
+            fragment.appendChild(span);
+          });
+          node.parentNode.replaceChild(fragment, node);
+          return;
+        }
+        if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains('title-letter-char')) {
+          splitHeadingText(node);
+        }
+      });
+    }
+
+    titleTargets.forEach((heading) => {
+      splitHeadingText(heading);
+      const letters = heading.querySelectorAll('.title-letter-char');
+      let resetTimer = null;
+      letters.forEach((letter, index) => {
+        letter.style.setProperty('--letter-index', index);
+      });
+
+      heading.addEventListener('mouseenter', () => {
+        heading.classList.remove('is-animated');
+        if (resetTimer) clearTimeout(resetTimer);
+        void heading.offsetWidth;
+        heading.classList.add('is-animated');
+        const totalDuration = (letters.length * 35) + 380;
+        resetTimer = setTimeout(() => {
+          heading.classList.remove('is-animated');
+        }, totalDuration);
+      });
+    });
+
+    const previewVideos = document.querySelectorAll('.media-hover-video');
+    if (!prefersReducedMotion) {
+      previewVideos.forEach((videoEl) => {
+        const card = videoEl.closest('.media-preview-item');
+        if (!card) return;
+
+        card.addEventListener('mouseenter', () => {
+          const playPromise = videoEl.play();
+          if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {});
+          }
+        });
+
+        card.addEventListener('mouseleave', () => {
+          videoEl.pause();
+          videoEl.currentTime = 0;
+        });
+      });
+    }
+  })();
+</script>
+{% endblock %}

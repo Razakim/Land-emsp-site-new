@@ -1,0 +1,198 @@
+﻿{% extends 'base/base_admin.html' %}
+{% block title %}Emplois du temps - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:etudiants_liste' %}">Academique</a> / Emplois du temps{% endblock %}
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 no-print">
+  <div>
+    <h4 class="admin-page-title mb-1">Emplois du temps et programmation</h4>
+    <p class="text-muted mb-0">Grille hebdomadaire conforme au format FS MENUM, imprimable et exportable.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Imprimer</button>
+    <a class="btn btn-outline-secondary" href="{% url 'administration:emplois_du_temps_export_pdf' %}{% if export_query %}?{{ export_query }}{% endif %}"><i class="fa-solid fa-file-pdf me-1"></i>Exporter PDF</a>
+    <a class="btn btn-outline-secondary" href="{% url 'administration:emplois_du_temps_export_excel' %}{% if export_query %}?{{ export_query }}{% endif %}"><i class="fa-solid fa-file-excel me-1"></i>Exporter Excel</a>
+    <a class="btn btn-primary" href="#creationSeance"><i class="fa-solid fa-plus me-1"></i>Nouvelle seance</a>
+  </div>
+</div>
+
+<div class="card mb-4 no-print">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3"><label class="form-label">Semaine</label><input type="date" class="form-control" name="semaine" value="{{ filters.semaine }}"></div>
+      <div class="col-md-3"><label class="form-label">Filiere</label><select name="filiere" class="form-select"><option value="">Toutes les filieres</option>{% for filiere in filieres %}<option value="{{ filiere.id }}" {% if filters.filiere == filiere.id|stringformat:'s' %}selected{% endif %}>{{ filiere.nom }}</option>{% endfor %}</select></div>
+      <div class="col-md-3"><label class="form-label">Professeur</label><select name="professeur" class="form-select"><option value="">Tous les professeurs</option>{% for professeur in professeurs %}<option value="{{ professeur.id }}" {% if filters.professeur == professeur.id|stringformat:'s' %}selected{% endif %}>{{ professeur.nom_complet }}</option>{% endfor %}</select></div>
+      <div class="col-md-3 d-flex gap-2"><a class="btn btn-outline-secondary w-100" href="?semaine={{ previous_week }}{% if filters.filiere %}&filiere={{ filters.filiere }}{% endif %}{% if filters.professeur %}&professeur={{ filters.professeur }}{% endif %}">Semaine -</a><button class="btn btn-primary w-100">Filtrer</button><a class="btn btn-outline-secondary w-100" href="?semaine={{ next_week }}{% if filters.filiere %}&filiere={{ filters.filiere }}{% endif %}{% if filters.professeur %}&professeur={{ filters.professeur }}{% endif %}">Semaine +</a></div>
+    </form>
+  </div>
+</div>
+
+<div class="timetable-print-sheet">
+  <div class="timetable-heading timetable-heading-official">
+    <div class="timetable-school-mark">
+      <div class="timetable-logo-box">EMSP</div>
+      <strong>DIRECTION DES ETUDES</strong>
+    </div>
+    <div class="timetable-title-block">
+      <h2>FS MENUM LICENCE 2 - SEMESTRE 4</h2>
+      <h3>{{ selected_filiere_timetable.nom|default:"DIGITALISATION DES SERVICES" }}</h3>
+      <p>DSER 2</p>
+    </div>
+    <div class="timetable-meta">
+      <form method="get" class="no-print">
+        <input type="hidden" name="semaine" value="{{ filters.semaine }}">
+        {% if filters.professeur %}<input type="hidden" name="professeur" value="{{ filters.professeur }}">{% endif %}
+        <label class="form-label mb-1">Filiere</label>
+        <select name="filiere" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">Toutes les filieres</option>
+          {% for filiere in filieres %}
+            <option value="{{ filiere.id }}" {% if filters.filiere == filiere.id|stringformat:'s' %}selected{% endif %}>{{ filiere.nom }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      <span>SEMAINE N° {{ emploi_grid.week_number|stringformat:"02d" }}</span>
+      <span>Du {{ emploi_grid.week_start_label }} {{ emploi_grid.week_start|date:'d/m/y' }}<br>au {{ emploi_grid.week_end_label }} {{ emploi_grid.week_end|date:'d/m/y' }}</span>
+      <small>Annee academique : 2025-2026</small>
+    </div>
+  </div>
+  <div class="table-responsive timetable-responsive">
+    <table class="table timetable-table mb-0">
+      <thead>
+        <tr><th>HORAIRES</th>{% for day in emploi_grid.days %}<th>{{ day.label }}<br><small>{{ day.date|date:'d' }} {{ day.month_label }}</small></th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for row in emploi_grid.rows %}
+          <tr class="{% if row.kind == 'pause' %}timetable-pause-row{% endif %}">
+            <th>{{ row.slot }}</th>
+            {% for cell in row.cells %}
+              <td>
+                {% if cell %}
+                  {% for seance in cell %}
+                    <button type="button" class="timetable-course timetable-course-edit"
+                            data-id="{{ seance.id }}"
+                            data-filiere="{{ seance.filiere_id }}"
+                            data-matiere="{{ seance.matiere_id }}"
+                            data-professeur="{{ seance.professeur_id }}"
+                            data-salle="{{ seance.salle }}"
+                            data-date="{{ seance.date|date:'Y-m-d' }}"
+                            data-heure-debut="{{ seance.heure_debut|time:'H:i' }}"
+                            data-heure-fin="{{ seance.heure_fin|time:'H:i' }}"
+                            title="Double-cliquer pour modifier">
+                      <strong>{{ seance.matiere.nom }}</strong>
+                      <span>{{ seance.filiere.nom }}</span>
+                      <em>{{ seance.professeur.nom_complet }}</em>
+                      <small>{{ seance.salle|default:"Salle a definir" }} · {{ seance.heure_debut|time:'H:i' }}-{{ seance.heure_fin|time:'H:i' }}</small>
+                    </button>
+                  {% endfor %}
+                {% elif row.kind == 'pause' %}
+                  <span class="timetable-pause">{{ row.slot }}</span>
+                {% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="timetable-signature">
+    <strong>LE RESPONSABLE DE LA FORMATION PAR INTERIM</strong>
+    <span>Dr Remy DAGO</span>
+  </div>
+</div>
+
+<div class="row g-4 mt-2 no-print">
+  <div class="col-xl-5">
+    <div class="card" id="creationSeance">
+      <div class="card-header"><h5 class="mb-0">Creation de seance</h5></div>
+      <div class="card-body">
+        <form method="post" class="row g-3">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_seance">
+          <div class="col-12"><label class="form-label" for="id_filiere">Filiere</label><select class="form-select" id="id_filiere" name="filiere" required><option value="">Selectionner une filiere</option>{% for filiere in filieres %}<option value="{{ filiere.id }}">{{ filiere.nom }}</option>{% endfor %}</select></div>
+          <div class="col-12"><label class="form-label" for="id_matiere">Matiere</label><select class="form-select" id="id_matiere" name="matiere" required><option value="">Selectionner une matiere</option>{% for matiere in matieres %}<option value="{{ matiere.id }}" data-filiere="{{ matiere.filiere_id }}">{{ matiere.nom }} - {{ matiere.filiere.nom }}</option>{% endfor %}</select></div>
+          <div class="col-12"><label class="form-label" for="id_professeur">Professeur</label><select class="form-select" id="id_professeur" name="professeur" required><option value="">Selectionner un professeur</option>{% for professeur in professeurs %}<option value="{{ professeur.id }}">{{ professeur.nom_complet }}</option>{% endfor %}</select></div>
+          <div class="col-12"><label class="form-label" for="id_salle">Salle</label><input class="form-control" id="id_salle" name="salle" placeholder="Ex: Salle B204"></div>
+          <div class="col-12"><label class="form-label" for="id_date">Date</label><input type="date" class="form-control" id="id_date" name="date" required></div>
+          <div class="col-md-6"><label class="form-label" for="id_heure_debut">Heure debut</label><input type="time" class="form-control" id="id_heure_debut" name="heure_debut" required></div>
+          <div class="col-md-6"><label class="form-label" for="id_heure_fin">Heure fin</label><input type="time" class="form-control" id="id_heure_fin" name="heure_fin" required></div>
+          <div class="col-12"><button class="btn btn-primary w-100" type="submit">Enregistrer</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-7">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Seances programmees</h5></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Date</th><th>Seance</th><th>Professeur</th></tr></thead>
+          <tbody>{% for seance in seances_filtrees %}<tr><td>{{ seance.date|date:'d/m/Y' }}<br><span class="text-muted">{{ seance.heure_debut|time:'H:i' }}-{{ seance.heure_fin|time:'H:i' }}</span></td><td>{{ seance.matiere.nom }}<br><span class="text-muted">{{ seance.filiere.nom }}{% if seance.salle %} - {{ seance.salle }}{% endif %}</span></td><td>{{ seance.professeur.nom_complet }}</td></tr>{% empty %}<tr><td colspan="3" class="text-center text-muted py-4">Aucune seance programmee.</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade no-print" id="editSeanceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_seance">
+        <input type="hidden" name="object_id" id="edit_seance_id">
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier la seance</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Filiere</label><select class="form-select" id="edit_filiere" name="filiere" required>{% for filiere in filieres %}<option value="{{ filiere.id }}">{{ filiere.nom }}</option>{% endfor %}</select></div>
+            <div class="col-md-6"><label class="form-label">Matiere</label><select class="form-select" id="edit_matiere" name="matiere" required>{% for matiere in matieres %}<option value="{{ matiere.id }}" data-filiere="{{ matiere.filiere_id }}">{{ matiere.nom }} - {{ matiere.filiere.nom }}</option>{% endfor %}</select></div>
+            <div class="col-md-6"><label class="form-label">Professeur</label><select class="form-select" id="edit_professeur" name="professeur" required>{% for professeur in professeurs %}<option value="{{ professeur.id }}">{{ professeur.nom_complet }}</option>{% endfor %}</select></div>
+            <div class="col-md-6"><label class="form-label">Salle</label><input class="form-control" id="edit_salle" name="salle"></div>
+            <div class="col-md-4"><label class="form-label">Date</label><input type="date" class="form-control" id="edit_date" name="date" required></div>
+            <div class="col-md-4"><label class="form-label">Heure debut</label><input type="time" class="form-control" id="edit_heure_debut" name="heure_debut" required></div>
+            <div class="col-md-4"><label class="form-label">Heure fin</label><input type="time" class="form-control" id="edit_heure_fin" name="heure_fin" required></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var filiereSelect = document.getElementById('id_filiere');
+    var matiereSelect = document.getElementById('id_matiere');
+    function filterMatieres() {
+      if (!filiereSelect || !matiereSelect) return;
+      var filiereId = filiereSelect.value;
+      Array.prototype.forEach.call(matiereSelect.options, function (option) {
+        option.hidden = Boolean(option.value && filiereId && option.dataset.filiere !== filiereId);
+      });
+      if (matiereSelect.selectedOptions.length && matiereSelect.selectedOptions[0].hidden) matiereSelect.value = '';
+    }
+    filiereSelect?.addEventListener('change', filterMatieres);
+    filterMatieres();
+
+    document.querySelectorAll('.timetable-course-edit').forEach(function (button) {
+      button.addEventListener('dblclick', function () {
+        document.getElementById('edit_seance_id').value = button.dataset.id || '';
+        document.getElementById('edit_filiere').value = button.dataset.filiere || '';
+        document.getElementById('edit_matiere').value = button.dataset.matiere || '';
+        document.getElementById('edit_professeur').value = button.dataset.professeur || '';
+        document.getElementById('edit_salle').value = button.dataset.salle || '';
+        document.getElementById('edit_date').value = button.dataset.date || '';
+        document.getElementById('edit_heure_debut').value = button.dataset.heureDebut || '';
+        document.getElementById('edit_heure_fin').value = button.dataset.heureFin || '';
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editSeanceModal'));
+        modal.show();
+      });
+    });
+  });
+</script>
+{% endblock %}

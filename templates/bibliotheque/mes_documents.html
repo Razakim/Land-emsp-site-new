@@ -1,0 +1,69 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mes documents · EMSP{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/bibliotheque.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="biblio-page py-5 mt-5">
+  <div class="container">
+    <div class="biblio-header mb-4">
+      <h1>Mes documents</h1>
+      <p>Retrouve tes depots, tes documents telecharges et tes favoris.</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'depots' %}active{% endif %}" href="?tab=depots">Mes depots</a></li>
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'telecharges' %}active{% endif %}" href="?tab=telecharges">Telecharges</a></li>
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'favoris' %}active{% endif %}" href="?tab=favoris">Favoris</a></li>
+    </ul>
+
+    {% if active_tab == 'telecharges' %}
+    <div class="detail-card">
+      {% for item in telecharges %}
+      <div class="row py-2 border-bottom">
+        <div class="col-md-7"><a href="{% url 'bibliotheque:detail' item.document.pk %}">{{ item.document.titre }}</a></div>
+        <div class="col-md-3">{{ item.created_at|date:"d/m/Y H:i" }}</div>
+        <div class="col-md-2"><a class="btn btn-sm btn-outline-success" href="{% url 'bibliotheque:download' item.document.pk %}">Retelecharger</a></div>
+      </div>
+      {% empty %}<p class="mb-0">Aucun telechargement.</p>{% endfor %}
+    </div>
+    {% elif active_tab == 'favoris' %}
+    <div class="detail-card">
+      {% for item in favoris %}
+      <div class="row py-2 border-bottom">
+        <div class="col-md-8"><a href="{% url 'bibliotheque:detail' item.document.pk %}">{{ item.document.titre }}</a></div>
+        <div class="col-md-4 d-flex gap-2 justify-content-md-end">
+          <a class="btn btn-sm btn-outline-success" href="{% url 'bibliotheque:download' item.document.pk %}">Telecharger</a>
+          <form method="post" action="{% url 'bibliotheque:toggle_favori' item.document.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Retirer</button></form>
+        </div>
+      </div>
+      {% empty %}<p class="mb-0">Aucun favori.</p>{% endfor %}
+    </div>
+    {% else %}
+    <div class="detail-card">
+      {% for doc in depots %}
+      <div class="row py-2 border-bottom align-items-center">
+        <div class="col-md-4"><a href="{% url 'bibliotheque:detail' doc.pk %}">{{ doc.titre }}</a></div>
+        <div class="col-md-2">{{ doc.type_document.libelle }} / {{ doc.semestre.code }}</div>
+        <div class="col-md-2">{{ doc.created_at|date:"d/m/Y" }}</div>
+        <div class="col-md-2">
+          {% if doc.valide %}
+          <span class="badge text-bg-success">Valide</span>
+          {% elif doc.motif_refus %}
+          <span class="badge text-bg-danger">Refuse</span>
+          {% else %}
+          <span class="badge text-bg-warning">En attente</span>
+          {% endif %}
+        </div>
+        <div class="col-md-2 text-md-end">{{ doc.telechargements_count }} telechargements</div>
+      </div>
+      {% empty %}<p class="mb-0">Aucun depot.</p>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

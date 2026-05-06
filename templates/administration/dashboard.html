@@ -1,0 +1,102 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+{% block title %}Dashboard admin - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / Vue d'ensemble{% endblock %}
+{% block content %}
+<h4 class="admin-page-title">Vue d'ensemble administration</h4>
+<p class="admin-page-subtitle">Suivi global des inscriptions, paiements, notes, presences et moderation des contenus.</p>
+
+<div class="row g-4">
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-green"><div class="card-body"><div class="text-muted mb-1">Filieres actives</div><div class="kpi-value">{{ kpi_total_filieres }}</div><a class="kpi-trend text-success mt-1" href="{% url 'administration:parametres' %}">Catalogue academique</a></div></div></div>
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-red"><div class="card-body"><div class="text-muted mb-1">Documents en attente</div><div class="kpi-value">{{ kpi_documents_attente }}</div><a class="kpi-trend text-danger mt-1" href="{% url 'administration:bibliotheque_moderation' %}">Moderation requise</a></div></div></div>
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-teal"><div class="card-body"><div class="text-muted mb-1">Documents publies</div><div class="kpi-value">{{ kpi_documents_valides }}</div><a class="kpi-trend text-info mt-1" href="{% url 'administration:bibliotheque_moderation' %}?tab=valides">Bibliotheque validee</a></div></div></div>
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-violet"><div class="card-body"><div class="text-muted mb-1">Etudiants actifs</div><div class="kpi-value">{{ kpi_total_etudiants }}</div><a class="kpi-trend text-primary mt-1" href="{% url 'administration:etudiants_liste' %}">Population academique</a></div></div></div>
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-orange"><div class="card-body"><div class="text-muted mb-1">Matieres actives</div><div class="kpi-value">{{ kpi_total_matieres }}</div><a class="kpi-trend text-warning mt-1" href="{% url 'administration:parametres' %}">Assignees aux filieres</a></div></div></div>
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-blue"><div class="card-body"><div class="text-muted mb-1">Professeurs actifs</div><div class="kpi-value">{{ kpi_total_professeurs }}</div><a class="kpi-trend text-primary mt-1" href="{% url 'administration:professeurs' %}">Corps enseignant</a></div></div></div>
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-green"><div class="card-body"><div class="text-muted mb-1">Cars actifs</div><div class="kpi-value">{{ kpi_total_cars }}</div><a class="kpi-trend text-success mt-1" href="{% url 'administration:transport_cars' %}">Transport scolaire</a></div></div></div>
+  <div class="col-sm-6 col-xl-4"><div class="card kpi-card kpi-teal"><div class="card-body"><div class="text-muted mb-1">Inscriptions transport</div><div class="kpi-value">{{ kpi_total_inscriptions_transport }}</div><a class="kpi-trend text-info mt-1" href="{% url 'administration:transport_cars' %}">Axes etudiants</a></div></div></div>
+
+  <div class="col-xl-8">
+    <div class="card admin-card-min">
+      <div class="card-header d-flex justify-content-between align-items-center"><h5 class="mb-0">Tendance inscriptions & documents</h5><span class="badge bg-label-primary">6 derniers mois</span></div>
+      <div class="card-body">
+        <div id="adminChartTrend" class="admin-chart-box" aria-label="Graphique de tendance mensuelle"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card admin-card-min">
+      <div class="card-header"><h5 class="mb-0">Documents publies vs en attente</h5></div>
+      <div class="card-body">
+        <div id="adminChartDocumentsDonut" class="admin-chart-box admin-chart-box-sm mb-2" aria-label="Repartition des documents"></div>
+        <div class="d-flex justify-content-center gap-3 small text-muted">
+          <span><i class="ri ri-checkbox-circle-fill text-success"></i> Publies</span>
+          <span><i class="ri ri-time-line text-danger"></i> En attente</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-6">
+    <div class="card admin-card-min">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Etudiants actifs par filiere</h5>
+        <span class="badge bg-label-warning">Top 6</span>
+      </div>
+      <div class="card-body">
+        <div id="adminChartFilieres" class="admin-chart-box" aria-label="Graphique des filieres"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-6">
+    <div class="card admin-card-min">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Occupation transport</h5>
+        <span class="badge bg-label-primary">{{ dashboard_chart_data.cars_count }} cars</span>
+      </div>
+      <div class="card-body">
+        <div id="adminChartTransport" class="admin-chart-box admin-chart-box-sm mb-3" aria-label="Occupation transport"></div>
+        <div class="text-center text-muted small">
+          Places disponibles: {{ dashboard_chart_data.transport_disponibles }} / {{ dashboard_chart_data.transport_places_total }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="card admin-card-min">
+      <div class="card-header"><h5 class="mb-0">Alertes urgentes</h5></div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 admin-alert-row"><i class="fa-solid fa-triangle-exclamation"></i>Dossiers en attente <span class="badge bg-label-danger me-auto ms-2">{{ kpi_dossiers_attente }}</span><a href="{% url 'administration:inscriptions' %}" class="btn btn-sm btn-label-primary">Traiter</a></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 admin-alert-row"><i class="fa-solid fa-triangle-exclamation"></i>Paiements a verifier <span class="badge bg-label-danger me-auto ms-2">{{ kpi_paiements_attente }}</span><a href="{% url 'administration:paiements' %}" class="btn btn-sm btn-label-primary">Traiter</a></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 admin-alert-row"><i class="fa-solid fa-triangle-exclamation"></i>Assiduite &lt; 75% <span class="badge bg-label-danger me-auto ms-2">{{ kpi_assiduite_alertes }}</span><a href="{% url 'administration:presences' %}" class="btn btn-sm btn-label-primary">Voir</a></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 admin-alert-row"><i class="fa-solid fa-triangle-exclamation"></i>Docs a moderer <span class="badge bg-label-warning me-auto ms-2">{{ kpi_documents_attente }}</span><a href="{% url 'administration:bibliotheque_moderation' %}" class="btn btn-sm btn-label-primary">Moderer</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Activite recente</h5></div>
+      <div class="card-body">
+        <ul class="timeline timeline-compact mb-0">
+          {% for activite in activites_recentes %}
+            <li class="timeline-item timeline-item-{{ activite.type }}"><span class="timeline-indicator"><i class="fa-solid fa-circle"></i></span><div class="timeline-event"><h6 class="mb-1">{{ activite.titre }}</h6><small class="text-muted">{{ activite.date|date:"d/m/Y H:i" }}</small></div></li>
+          {% empty %}
+            <li class="timeline-item timeline-item-secondary"><span class="timeline-indicator"></span><div class="timeline-event"><h6 class="mb-1">Aucune activite recente</h6><small class="text-muted">Les prochaines actions apparaitront ici.</small></div></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ dashboard_chart_data|json_script:"dashboard-chart-data" }}
+  <script src="{% static 'assets/vendor/libs/apex-charts/apexcharts.js' %}"></script>
+  <script src="{% static 'js/admin-dashboard.js' %}"></script>
+{% endblock %}

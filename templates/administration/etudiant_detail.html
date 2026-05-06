@@ -1,0 +1,156 @@
+﻿{% extends 'base/base_admin.html' %}
+{% block title %}Fiche etudiant - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:etudiants_liste' %}">Etudiants</a> / Fiche etudiant{% endblock %}
+{% block content %}
+{% if not etudiant %}
+  <div class="alert alert-warning">Aucun etudiant disponible. Ajoutez d'abord un etudiant.</div>
+{% else %}
+<div class="row g-4">
+  <div class="col-xl-4">
+    <div class="card">
+      <div class="card-body text-center">
+        {% if etudiant.photo %}
+          <img src="{{ etudiant.photo.url }}" alt="{{ etudiant.nom_complet }}" class="admin-student-detail-photo mx-auto mb-3">
+        {% else %}
+          <div class="avatar avatar-xl mx-auto mb-3"><span class="avatar-initial rounded-circle bg-label-primary">{{ etudiant.utilisateur.first_name|first|default:'E' }}{{ etudiant.utilisateur.last_name|first|default:'' }}</span></div>
+        {% endif %}
+        <h5 class="mb-1">{{ etudiant.nom_complet }}</h5>
+        <div class="text-muted mb-2">{{ etudiant.matricule }}</div>
+        <div class="d-flex justify-content-center gap-2">
+          {% if etudiant.actif %}<span class="badge bg-label-success">Actif</span>{% else %}<span class="badge bg-label-secondary">Inactif</span>{% endif %}
+           <span class="badge bg-label-info">{{ etudiant.licence|default:'-' }} - {{ etudiant.semestre|default:'-' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header"><h5 class="mb-0">Modifier le profil</h5></div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="row g-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_etudiant">
+          <div class="col-md-6"><label class="form-label">Prenom</label><input class="form-control" name="prenom" value="{{ etudiant.utilisateur.first_name }}"></div>
+          <div class="col-md-6"><label class="form-label">Nom</label><input class="form-control" name="nom" value="{{ etudiant.utilisateur.last_name }}"></div>
+          <div class="col-12"><label class="form-label">Email</label><input class="form-control" name="email" type="email" value="{{ etudiant.utilisateur.email }}"></div>
+          <div class="col-12"><label class="form-label">Matricule</label><input class="form-control" name="matricule" value="{{ etudiant.matricule }}" placeholder="prenom.nom@fsmenum2026.emsp.int"></div>
+          <div class="col-12"><label class="form-label">Photo</label><input class="form-control" type="file" name="photo" accept="image/*"></div>
+          <div class="col-md-6"><label class="form-label">Telephone</label><input class="form-control" name="telephone" value="{{ etudiant.telephone }}"></div>
+          <div class="col-md-6"><label class="form-label">Statut</label><select class="form-select" name="actif"><option value="True" {% if etudiant.actif %}selected{% endif %}>Actif</option><option value="False" {% if not etudiant.actif %}selected{% endif %}>Inactif</option></select></div>
+          <div class="col-md-6"><label class="form-label">Filiere</label><select class="form-select" name="filiere">{% for filiere in filieres %}<option value="{{ filiere.id }}" {% if etudiant.filiere_id == filiere.id %}selected{% endif %}>{{ filiere.nom }}</option>{% endfor %}</select></div>
+           <div class="col-md-3"><label class="form-label">Niveau</label><select class="form-select" name="licence">{% for licence in licences %}<option value="{{ licence.id }}" {% if etudiant.licence_id == licence.id %}selected{% endif %}>{{ licence }}</option>{% endfor %}</select></div>
+           <div class="col-md-3"><label class="form-label">Semestre</label><select class="form-select" name="semestre">{% for semestre in semestres %}<option value="{{ semestre.id }}" {% if etudiant.semestre_id == semestre.id %}selected{% endif %}>{{ semestre }}</option>{% endfor %}</select></div>
+          <div class="col-12 d-grid"><button class="btn btn-primary">Mise à jour</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-8">
+    <div class="card mb-4">
+      <div class="card-header"><h5 class="mb-0">Nouveau bulletin</h5></div>
+      <div class="card-body">
+        <form method="post" class="row g-2 align-items-end">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_bulletin">
+          <div class="col-md-3"><label class="form-label">Annee</label><select class="form-select" name="annee_academique">{% for annee in annees_academiques %}<option value="{{ annee.id }}">{{ annee.libelle }}</option>{% endfor %}</select></div>
+           <div class="col-md-2"><label class="form-label">Semestre</label><select class="form-select" name="semestre">{% for semestre in semestres %}<option value="{{ semestre.id }}">{{ semestre }}</option>{% endfor %}</select></div>
+          <div class="col-md-5"><label class="form-label">Appreciation</label><input class="form-control" name="appreciation" placeholder="Commentaire general"></div>
+          <div class="col-md-1"><label class="form-label">Publie</label><select class="form-select" name="publie"><option value="False">Non</option><option value="True">Oui</option></select></div>
+          <div class="col-md-1 d-grid"><button class="btn btn-outline-primary">Creer</button></div>
+        </form>
+      </div>
+    </div>
+
+    {% for bulletin in bulletins %}
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+             <h5 class="mb-0">Bulletin {{ bulletin.annee_academique.libelle }} - {{ bulletin.semestre }}</h5>
+            <small class="text-muted">Moyenne: {{ bulletin.moyenne }}/20 - Mention: {{ bulletin.mention }} - Decision: {{ bulletin.get_decision_display }}</small>
+          </div>
+          <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" target="_blank" href="{% url 'administration:bulletin_pdf_matricule' %}?matricule={{ etudiant.matricule|urlencode }}">PDF</a>
+            <form method="post" onsubmit="return confirm('Supprimer ce bulletin ?');">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_bulletin">
+              <input type="hidden" name="object_id" value="{{ bulletin.id }}">
+              <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+            </form>
+          </div>
+        </div>
+        <div class="card-body">
+          <form method="post" class="row g-2 mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_bulletin">
+            <input type="hidden" name="object_id" value="{{ bulletin.id }}">
+            <div class="col-md-3"><select class="form-select form-select-sm" name="annee_academique">{% for annee in annees_academiques %}<option value="{{ annee.id }}" {% if bulletin.annee_academique_id == annee.id %}selected{% endif %}>{{ annee.libelle }}</option>{% endfor %}</select></div>
+             <div class="col-md-2"><select class="form-select form-select-sm" name="semestre">{% for semestre in semestres %}<option value="{{ semestre.id }}" {% if bulletin.semestre_id == semestre.id %}selected{% endif %}>{{ semestre }}</option>{% endfor %}</select></div>
+            <div class="col-md-5"><input class="form-control form-control-sm" name="appreciation" value="{{ bulletin.appreciation }}" placeholder="Appreciation"></div>
+            <div class="col-md-1"><select class="form-select form-select-sm" name="publie"><option value="True" {% if bulletin.publie %}selected{% endif %}>Publie</option><option value="False" {% if not bulletin.publie %}selected{% endif %}>Brouillon</option></select></div>
+            <div class="col-md-1 d-grid"><button class="btn btn-sm btn-outline-primary">Mise à jour</button></div>
+          </form>
+
+          <div class="table-responsive mb-3">
+            <table class="table table-sm align-middle mb-0">
+              <thead><tr><th>Matiere</th><th>Professeur</th><th>Coeff</th><th>CC</th><th>Examen</th><th>Finale</th><th>Actions</th></tr></thead>
+              <tbody>
+                {% for note in bulletin.notes.all %}
+                  <tr>
+                    <td>{{ note.matiere.nom }}</td>
+                    <td>{{ note.professeur.nom_complet|default:'-' }}</td>
+                    <td>{{ note.coefficient }}</td>
+                    <td>{{ note.note_cc }}</td>
+                    <td>{{ note.note_examen }}</td>
+                    <td><strong>{{ note.note_finale }}</strong></td>
+                    <td>
+                      <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_note">
+                        <input type="hidden" name="object_id" value="{{ note.id }}">
+                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer cette note ?');">Supprimer</button>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="7">
+                      <form method="post" class="row g-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_note">
+                        <input type="hidden" name="object_id" value="{{ note.id }}">
+                        <div class="col-md-3"><select class="form-select form-select-sm" name="matiere">{% for matiere in matieres %}<option value="{{ matiere.id }}" {% if note.matiere_id == matiere.id %}selected{% endif %}>{{ matiere.nom }}</option>{% endfor %}</select></div>
+                        <div class="col-md-3"><select class="form-select form-select-sm" name="professeur"><option value="">--</option>{% for professeur in professeurs %}<option value="{{ professeur.id }}" {% if note.professeur_id == professeur.id %}selected{% endif %}>{{ professeur.nom_complet }}</option>{% endfor %}</select></div>
+                        <div class="col-md-1"><input class="form-control form-control-sm" type="number" min="1" name="coefficient" value="{{ note.coefficient }}"></div>
+                        <div class="col-md-1"><input class="form-control form-control-sm" type="number" step="0.01" min="0" max="20" name="note_cc" value="{{ note.note_cc }}"></div>
+                        <div class="col-md-1"><input class="form-control form-control-sm" type="number" step="0.01" min="0" max="20" name="note_examen" value="{{ note.note_examen }}"></div>
+                        <div class="col-md-2"><input class="form-control form-control-sm" name="observation" value="{{ note.observation }}" placeholder="Observation"></div>
+                        <div class="col-md-1 d-grid"><button class="btn btn-sm btn-outline-primary">Mise à jour</button></div>
+                      </form>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="7" class="text-muted">Aucune note saisie pour ce bulletin.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <form method="post" class="row g-2">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_note">
+            <input type="hidden" name="bulletin_id" value="{{ bulletin.id }}">
+            <div class="col-md-3"><select class="form-select" name="matiere">{% for matiere in matieres %}<option value="{{ matiere.id }}">{{ matiere.nom }}</option>{% endfor %}</select></div>
+            <div class="col-md-3"><select class="form-select" name="professeur"><option value="">Professeur (optionnel)</option>{% for professeur in professeurs %}<option value="{{ professeur.id }}">{{ professeur.nom_complet }}</option>{% endfor %}</select></div>
+            <div class="col-md-1"><input class="form-control" type="number" min="1" name="coefficient" value="1"></div>
+            <div class="col-md-2"><input class="form-control" type="number" step="0.01" min="0" max="20" name="note_cc" placeholder="Note CC"></div>
+            <div class="col-md-2"><input class="form-control" type="number" step="0.01" min="0" max="20" name="note_examen" placeholder="Note examen"></div>
+            <div class="col-md-1 d-grid"><button class="btn btn-primary">Ajouter</button></div>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <div class="card"><div class="card-body text-muted">Aucun bulletin pour cet etudiant. Utilisez le formulaire ci-dessus.</div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

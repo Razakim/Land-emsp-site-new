@@ -1,0 +1,118 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ document.titre }} · Bibliotheque EMSP{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/bibliotheque.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="biblio-page py-5 mt-5">
+  <div class="container">
+    <nav class="small mb-3">
+      <a href="/">Accueil</a> &rsaquo; <a href="{% url 'bibliotheque:liste' %}">Bibliotheque</a> &rsaquo; {{ document.filiere.nom }} &rsaquo; {{ document.titre }}
+    </nav>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="detail-card">
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            <span class="badge text-bg-primary">{{ document.type_document.libelle }}</span>
+            <span class="badge text-bg-light">{{ document.semestre.code }}</span>
+          </div>
+          <h1 class="h2">{{ document.titre }}</h1>
+          <p class="text-muted">{{ document.filiere.nom }} · {{ document.matiere.nom }} · {{ document.annee_academique.libelle }}</p>
+          <p>{{ document.description }}</p>
+
+          <dl class="row mb-0 mt-4 metadata">
+            <dt class="col-sm-4">Type</dt><dd class="col-sm-8">{{ document.type_document.libelle }}</dd>
+            <dt class="col-sm-4">Filiere</dt><dd class="col-sm-8">{{ document.filiere.nom }}</dd>
+            <dt class="col-sm-4">Licence</dt><dd class="col-sm-8">{{ document.licence.code }}</dd>
+            <dt class="col-sm-4">Semestre</dt><dd class="col-sm-8">{{ document.semestre.code }}</dd>
+            <dt class="col-sm-4">Matiere</dt><dd class="col-sm-8">{{ document.matiere.nom }}</dd>
+            <dt class="col-sm-4">Annee academique</dt><dd class="col-sm-8">{{ document.annee_academique.libelle }}</dd>
+            <dt class="col-sm-4">Contributeur</dt><dd class="col-sm-8">{{ document.contributeur.get_full_name|default:document.contributeur.username }}</dd>
+            <dt class="col-sm-4">Date de depot</dt><dd class="col-sm-8">{{ document.created_at|date:"d F Y" }}</dd>
+            <dt class="col-sm-4">Telechargements</dt><dd class="col-sm-8">{{ document.telechargements_count }}</dd>
+            <dt class="col-sm-4">Taille</dt><dd class="col-sm-8">{{ document.taille_mo }} Mo</dd>
+            <dt class="col-sm-4">Format</dt><dd class="col-sm-8">{{ document.extension }}</dd>
+            <dt class="col-sm-4">Statut</dt><dd class="col-sm-8">{% if document.valide %}Valide{% else %}En attente{% endif %}</dd>
+          </dl>
+        </div>
+
+        {% if is_pdf %}
+        <div class="detail-card mt-4">
+          <h2 class="h5">Previsualisation</h2>
+          <iframe class="pdf-preview" src="{{ document.fichier.url }}" title="Preview PDF"></iframe>
+        </div>
+        {% endif %}
+
+        <div class="detail-card mt-4">
+          <h2 class="h5">Discussion ({{ commentaires|length }} commentaires)</h2>
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'bibliotheque:commentaire_create' document.pk %}" class="mb-3">
+            {% csrf_token %}
+            {{ comment_form.contenu }}
+            <button class="btn btn-success btn-sm mt-2" type="submit">Commenter</button>
+          </form>
+          {% else %}
+          <p><a href="{% url 'accounts:login' %}?next={% url 'bibliotheque:detail' document.pk %}">Connectez-vous</a> pour commenter.</p>
+          {% endif %}
+
+          {% for commentaire in commentaires %}
+          <div class="comment-item">
+            <strong>{{ commentaire.utilisateur.get_full_name|default:commentaire.utilisateur.username }}</strong>
+            <small class="text-muted">{{ commentaire.created_at|date:"d/m/Y H:i" }}</small>
+            <p class="mb-0">{{ commentaire.contenu }}</p>
+          </div>
+          {% empty %}
+          <p class="mb-0">Aucun commentaire pour le moment.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="detail-card sticky-lg-top" style="top: 110px;">
+          <h3 class="h6">Actions</h3>
+          {% if can_download %}
+          <a class="btn btn-success w-100 mb-2" href="{% url 'bibliotheque:download' document.pk %}">Telecharger ({{ document.extension }})</a>
+          {% else %}
+          <a class="btn btn-outline-secondary w-100 mb-2" href="{% url 'accounts:login' %}?next={% url 'bibliotheque:detail' document.pk %}">Inscris-toi pour telecharger</a>
+          {% endif %}
+
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'bibliotheque:toggle_favori' document.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-outline-dark w-100 mb-2" type="submit">{% if is_favori %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}</button>
+          </form>
+          {% endif %}
+          <button class="btn btn-outline-danger w-100" type="button">Signaler un probleme</button>
+        </div>
+
+        {% if similar_docs %}
+        <div class="detail-card mt-4">
+          <h3 class="h6">Dans la meme matiere</h3>
+          <ul class="list-unstyled mb-0">
+            {% for item in similar_docs %}
+            <li class="mb-2"><a href="{% url 'bibliotheque:detail' item.pk %}">{{ item.titre }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if same_author_docs %}
+        <div class="detail-card mt-4">
+          <h3 class="h6">Du meme contributeur</h3>
+          <ul class="list-unstyled mb-0">
+            {% for item in same_author_docs %}
+            <li class="mb-2"><a href="{% url 'bibliotheque:detail' item.pk %}">{{ item.titre }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

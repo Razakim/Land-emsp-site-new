@@ -1,0 +1,125 @@
+.biblio-page {
+  background: #f6fbf8;
+}
+
+.biblio-header h1 {
+  font-weight: 700;
+  margin-bottom: .4rem;
+}
+
+.biblio-header p {
+  color: #4f5f59;
+  max-width: 880px;
+}
+
+.biblio-stats {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.biblio-stats span {
+  background: #ffffff;
+  border: 1px solid #d7e8df;
+  border-radius: 999px;
+  padding: .35rem .75rem;
+  font-size: .86rem;
+  font-weight: 600;
+}
+
+.search-card,
+.filters-card,
+.detail-card {
+  background: #fff;
+  border: 1px solid #dfebe5;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(20, 52, 38, .05);
+}
+
+.filters-card {
+  position: sticky;
+  top: 120px;
+}
+
+.recent-tags {
+  display: flex;
+  gap: .45rem;
+  flex-wrap: wrap;
+}
+
+.results-meta {
+  color: #4d5f58;
+  font-size: .92rem;
+}
+
+.doc-card {
+  background: #fff;
+  border: 1px solid #dfe9e3;
+  border-top: 4px solid #198754;
+  border-radius: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.doc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 24px rgba(10, 40, 28, .1);
+}
+
+.doc-top,
+.doc-body,
+.doc-footer {
+  padding: .8rem;
+}
+
+.doc-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+
+.doc-body h3 {
+  font-size: 1rem;
+  margin: .45rem 0;
+  line-height: 1.35;
+}
+
+.doc-body p {
+  color: #495a54;
+  font-size: .9rem;
+}
+
+.doc-footer {
+  margin-top: auto;
+  border-top: 1px solid #edf3ef;
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.metadata dt,
+.metadata dd {
+  font-size: .93rem;
+}
+
+.pdf-preview {
+  width: 100%;
+  min-height: 460px;
+  border: 1px solid #d9e8e0;
+  border-radius: 10px;
+}
+
+.comment-item {
+  border-top: 1px solid #edf3ef;
+  padding-top: .75rem;
+  margin-top: .75rem;
+}
+
+@media (max-width: 991px) {
+  .filters-card {
+    position: static;
+  }
+}

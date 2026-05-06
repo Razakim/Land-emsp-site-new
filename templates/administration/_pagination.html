@@ -1,0 +1,7 @@
+{% if page_obj %}
+  <nav class="admin-pagination" aria-label="Pagination">
+    <a class="btn btn-sm btn-outline-secondary {% if not page_obj.has_previous %}disabled{% endif %}" {% if page_obj.has_previous %}href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.previous_page_number }}"{% else %}aria-disabled="true"{% endif %}>←</a>
+    <span class="admin-pagination-indicator">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    <a class="btn btn-sm btn-outline-secondary {% if not page_obj.has_next %}disabled{% endif %}" {% if page_obj.has_next %}href="?{% if page_query %}{{ page_query }}&{% endif %}page={{ page_obj.next_page_number }}"{% else %}aria-disabled="true"{% endif %}>→</a>
+  </nav>
+{% endif %}

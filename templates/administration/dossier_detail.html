@@ -1,0 +1,64 @@
+{% extends 'base/base_admin.html' %}
+{% block title %}Dossier candidat - EMSP{% endblock %}
+{% block breadcrumb %}<a href="{% url 'administration:dashboard' %}">Administration</a> / <a href="{% url 'administration:inscriptions' %}">Inscriptions</a> / Dossier{% endblock %}
+{% block content %}
+{% if not dossier %}
+  <div class="alert alert-warning">Aucun dossier disponible.</div>
+{% else %}
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Dossier - {{ dossier.inscription.nom_complet }}</h5></div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Nom complet</label><input class="form-control" value="{{ dossier.inscription.nom_complet }}" readonly></div>
+          <div class="col-md-6"><label class="form-label">Filiere demandee</label><input class="form-control" value="{{ dossier.inscription.filiere.nom }}" readonly></div>
+          <div class="col-md-6"><label class="form-label">Licence</label><input class="form-control" value="{{ dossier.inscription.licence }}" readonly></div>
+          <div class="col-md-6"><label class="form-label">Date soumission</label><input class="form-control" value="{{ dossier.inscription.date_soumission|date:'d/m/Y' }}" readonly></div>
+        </div>
+        <hr>
+        <h6>Documents fournis</h6>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item px-0 d-flex justify-content-between">Documents fournis <span class="badge bg-label-success">{{ dossier.documents_fournis }}</span></li>
+          <li class="list-group-item px-0 d-flex justify-content-between">Documents requis <span class="badge bg-label-primary">{{ dossier.documents_requis }}</span></li>
+          <li class="list-group-item px-0 d-flex justify-content-between">Documents manquants <span class="badge bg-label-danger">{{ dossier.documents_manquants }}</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header"><h6 class="mb-0">Commentaire interne</h6></div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_comment">
+          <textarea class="form-control mb-3" rows="5" name="commentaire_interne" placeholder="Notes internes non visibles etudiant">{{ dossier.commentaire_interne }}</textarea>
+          <button class="btn btn-outline-primary w-100">Enregistrer</button>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body d-grid gap-2">
+        <form method="post" class="d-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="validate_dossier">
+          <button class="btn btn-success">Valider le dossier</button>
+        </form>
+        <form method="post" class="d-grid" onsubmit="return confirm('Refuser ce dossier ?');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="refuse_dossier">
+          <textarea class="form-control mb-2" name="motif_refus" rows="2" placeholder="Motif de refus">{{ dossier.motif_refus }}</textarea>
+          <button class="btn btn-danger">Refuser</button>
+        </form>
+        <form method="post" class="d-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="mark_incomplete">
+          <button class="btn btn-outline-primary">Demander complement</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
